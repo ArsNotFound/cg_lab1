@@ -31,9 +31,11 @@ int main(int argc, char **argv) {
     }
 
     // Создаём вектор вершин (векторов из glm)
-    glm::vec3 vertices[1];
-    // Создаём вектор в центре экрана (x=0, y=0, z=0 - центр экрана)
-    vertices[0] = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 vertices[3];
+    // Создаём вектора (x, y, z относительно центра экрана)
+    vertices[0] = glm::vec3(-1.0f, -1.0f, 0.0f);
+    vertices[1] = glm::vec3(1.0f, -1.0f, 0.0f);
+    vertices[2] = glm::vec3(0.0f, 1.0f, 0.0f);
 
     // Генерируем объект переменного типа (количество объектов, ссылка на массив для хранения)
     glGenBuffers(1, &VBO);
@@ -58,7 +60,7 @@ int main(int argc, char **argv) {
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
         // Вызываем функцию отрисовки (режим рисования, индекс первого элемента в буфере, количество элементов)
-        glDrawArrays(GL_POINTS, 0, 1);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         // Отключаем использование каждого атрибута вершины в конвейере [хороший тон]
         glDisableVertexAttribArray(0);
