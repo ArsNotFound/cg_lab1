@@ -5,8 +5,15 @@
 #include <glm/ext/matrix_float4x4.hpp>
 #include "pipeline.h"
 
+// Задаём параметры окна
+#define WINDOW_WIDTH 1024
+#define WINDOW_HEIGHT 768
+
 // Хранит указатель на буфер вершин
 GLuint VBO;
+
+// Хранит указатель на буфер индексов
+GLuint IBO;
 
 // Указатель на всемирную матрицу
 GLuint gWorldLocation;
@@ -19,28 +26,47 @@ static const std::string pVS = "// Версия шейдера 3.3              
                                "// uniform-переменная типа mat4                                            \n"
                                "uniform mat4 gWorld;                                                       \n"
                                "                                                                           \n"
+                               "out vec4 Color;                                                            \n"
+                               "                                                                           \n"
                                "void main() {                                                              \n"
                                "  // Умножаем вектор вершин на всемирную матрицу для смещения треугольника \n"
                                "  gl_Position = gWorld * vec4(Position, 1.0);                              \n"
-                               "}";
+                               "  Color = vec4(clamp(Position, 0.0, 0.5), 1.0);                            \n"
+                               "}                                                                          \n"
+                               "";
+
+static const std::string pFS = "// Версия шейдера 3.3                                                      \n"
+                               "#version 330                                                               \n"
+                               "                                                                           \n"
+                               "in vec4 Color;                                                             \n"
+                               "out vec4 FragColor;                                                        \n"
+                               "                                                                           \n"
+                               "void main() {                                                              \n"
+                               "  // Устанавливаем цвет                                                    \n"
+                               "  FragColor = Color;                                                       \n"
+                               "}                                                                          \n"
+                               "";
+
 
 void renderSceneCallback() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     // Переменная для изменения значений
-    static float Scale = -1.0f;
+    static float Scale = 0.0f;
 
     // С каждой отрисовкой увеличиваем Scale
-    Scale += 0.001f;
+    Scale += 0.1f;
 
     // Создаём pipeline для трансформаций
     Pipeline p;
     // Меняем масштаб
-    p.scale(sinf(Scale * 0.1f), sinf(Scale * 0.1f), sinf(Scale * 0.1f));
-    // Двигаем треугольник по оси X
-    p.worldPos(sinf(Scale), 0.0f, 0.0f);
-    // Вращаем его по всем осям
-    p.rotate(sinf(Scale) * 90.0f, sinf(Scale) * 90.0f, sinf(Scale) * 90.0f);
+    p.scale(0.1f, 0.1f, 0.1f);
+    // Вращаем фигуру
+    p.rotate(0, Scale, 0);
+    // Устанавливаем положение фигуры
+    p.worldPos(0.0f, 0.0f, 100.0f);
+    // Задаём проекцию перспективы
+    p.perspectiveProj(90.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 10.0f, 10000.0f);
 
     // Загружаем данные в uniform-переменные шейдера (адрес переменной, количество матриц,
     // передаётся ли матрица по строкам, указатель на первый элемент матрицы)
@@ -49,9 +75,9 @@ void renderSceneCallback() {
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
-    glColor4f(0.f, 0.f, 0.f, 0.f);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, nullptr);
 
     glDisableVertexAttribArray(0);
 
@@ -65,15 +91,29 @@ void initializeGlutCallbacks() {
 }
 
 void createVertexBuffer() {
-    glm::vec3 vertices[3];
+    glm::vec3 vertices[4];
 
-    vertices[0] = glm::vec3(-0.5f, -0.5f, 0.0f);
-    vertices[1] = glm::vec3(0.8f, -1.0f, 0.0f);
-    vertices[2] = glm::vec3(0.0f, 0.6f, 0.0f);
+    vertices[0] = glm::vec3(-1.0f, -1.0f, 0.5773f);
+    vertices[1] = glm::vec3(0.0f, -1.0f, -1.15475f);
+    vertices[2] = glm::vec3(1.0f, -1.0f, 0.5773f);
+    vertices[3] = glm::vec3(0.0f, 1.0f, 0.0f);
 
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+}
+
+void createIndexBuffer() {
+    unsigned int indices[] = {
+            0, 3, 1,
+            1, 3, 2,
+            2, 3, 0,
+            0, 2, 1
+    };
+
+    glGenBuffers(1, &IBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 }
 
 // Функция, добавляющая шейдер к программе
@@ -124,6 +164,8 @@ void compileShaders() {
 
     // Добавляем шейдер для вершин
     addShader(shaderProgram, pVS, GL_VERTEX_SHADER);
+    // Добавляем шейдер для фрагментов
+    addShader(shaderProgram, pFS, GL_FRAGMENT_SHADER);
 
     GLint success = 0;
     GLchar errorLog[1024] = {0};
@@ -159,9 +201,9 @@ void compileShaders() {
 int main(int argc, char **argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
-    glutInitWindowSize(1024, 768);
+    glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
     glutInitWindowPosition(100, 100);
-    glutCreateWindow("Tutorial 06");
+    glutCreateWindow("Tutorial 12");
 
     // Инициализируем callback-функции
     initializeGlutCallbacks();
@@ -175,6 +217,8 @@ int main(int argc, char **argv) {
     glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
 
     createVertexBuffer();
+
+    createIndexBuffer();
 
     compileShaders();
 

@@ -15,6 +15,7 @@ public:
     Pipeline() : mScale(glm::vec3(1.0f, 1.0f, 1.0f)),
                  mWorldPos(glm::vec3(0.0f, 0.0f, 0.0f)),
                  mRotateInfo(glm::vec3(0.0f, 0.0f, 0.0f)),
+                 mPersProj(),
                  mTransformation(glm::mat4()) {}
 
     // Функция задания изменения масштаба
@@ -38,19 +39,36 @@ public:
         mRotateInfo[2] = rotateZ;
     }
 
+    void perspectiveProj(float FOV, float width, float height, float zNear, float zFar) {
+        mPersProj.FOV = FOV;
+        mPersProj.width = width;
+        mPersProj.height = height;
+        mPersProj.zNear = zNear;
+        mPersProj.zFar = zFar;
+    }
+
     // Функция получения итоговой матрицы
     const glm::mat4 *getTransformation();
 
 private:
     // Вспомогательные функции
-    void initScaleTransform(glm::mat4 &m) const;
-    void initRotateTransform(glm::mat4 &m) const;
-    void initTranslationTransform(glm::mat4 &m) const;
+    void initScaleTrans(glm::mat4 &m) const;
+    void initRotateTrans(glm::mat4 &m) const;
+    void initTranslationTrans(glm::mat4 &m) const;
+    void initPerspectiveProj(glm::mat4 &m) const;
 
     // Необходимые переменные
     glm::vec3 mScale;
     glm::vec3 mWorldPos;
     glm::vec3 mRotateInfo;
+
+    struct {
+        float FOV;
+        float width;
+        float height;
+        float zNear;
+        float zFar;
+    } mPersProj;
 
     glm::mat4 mTransformation;
 };
