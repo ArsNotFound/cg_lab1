@@ -35,12 +35,12 @@ void renderSceneCallback() {
 
     // Подготавливаем матрицу 4x4 для изменения координаты X на значение синуса Scale
     glm::mat4 World;
-    World[0][0] = 1.0f;
-    World[0][1] = 0.0f;
+    World[0][0] = cosf(Scale);
+    World[0][1] = -sinf(Scale);
     World[0][2] = 0.0f;
-    World[0][3] = sinf(Scale);
-    World[1][0] = 0.0f;
-    World[1][1] = 1.0f;
+    World[0][3] = 0.0f;
+    World[1][0] = sinf(Scale);
+    World[1][1] = cosf(Scale);
     World[1][2] = 0.0f;
     World[1][3] = 0.0f;
     World[2][0] = 0.0f;
