@@ -96,6 +96,7 @@ void createVertexBuffer() {
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 }
 
+// Функция, добавляющая шейдер к программе
 void addShader(GLuint shaderProgram, const std::string pShaderText, GLenum shaderType) {
     // Создаём шейдер
     GLuint shaderObj = glCreateShader(shaderType);
@@ -132,6 +133,7 @@ void addShader(GLuint shaderProgram, const std::string pShaderText, GLenum shade
     glAttachShader(shaderProgram, shaderObj);
 }
 
+// Функция, компилирующая программу-шейдер
 void compileShaders() {
     // Создаём программу-шейдер
     GLuint shaderProgram = glCreateProgram();
