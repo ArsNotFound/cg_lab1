@@ -2,80 +2,200 @@
 #include <GL/freeglut.h>
 #include <glm/vec3.hpp>
 #include <iostream>
+#include <glm/ext/matrix_float4x4.hpp>
 
 // Хранит указатель на буфер вершин
 GLuint VBO;
 
-int main(int argc, char **argv) {
-    // Инициализация glut
-    glutInit(&argc, argv);
+// Указатель на всемирную матрицу
+GLuint gWorldLocation;
 
-    // Установка двойной буферизации и отображения в режиме RGBA
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
+// Программа-шейдер
+static const std::string pVS = "// Версия шейдера 3.3                                                      \n"
+                               "#version 330                                                               \n"
+                               "// Входной тип данных - vec3 в позиции 0                                   \n"
+                               "layout (location = 0) in vec3 Position;                                    \n"
+                               "// uniform-переменная типа mat4                                            \n"
+                               "uniform mat4 gWorld;                                                       \n"
+                               "                                                                           \n"
+                               "void main() {                                                              \n"
+                               "  // Умножаем вектор вершин на всемирную матрицу для смещения треугольника \n"
+                               "  gl_Position = gWorld * vec4(Position, 1.0);                              \n"
+                               "}";
 
-    // Задание размера окна приложения (ширина, высота)
-    glutInitWindowSize(1024, 768);
+void renderSceneCallback() {
+    // Очищаем окно
+    glClear(GL_COLOR_BUFFER_BIT);
 
-    // Начальная позиция окна (x и y относительно левого верхнего окна)
-    glutInitWindowPosition(100, 100);
+    // Переменная для изменения значения X
+    static float Scale = -1.0f;
 
-    // Создаём окно с названием "Tutorial 02"
-    glutCreateWindow("Tutorial 02");
+    // С каждой отрисовкой увеличиваем Scale
+    Scale += 0.001f;
 
-    // Устанавливаем цвет фона (RGBA)
-    glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
+    // Подготавливаем матрицу 4x4 для изменения координаты X на значение синуса Scale
+    glm::mat4 World;
+    World[0][0] = 1.0f;
+    World[0][1] = 0.0f;
+    World[0][2] = 0.0f;
+    World[0][3] = sinf(Scale);
+    World[1][0] = 0.0f;
+    World[1][1] = 1.0f;
+    World[1][2] = 0.0f;
+    World[1][3] = 0.0f;
+    World[2][0] = 0.0f;
+    World[2][1] = 0.0f;
+    World[2][2] = 1.0f;
+    World[2][3] = 0.0f;
+    World[3][0] = 0.0f;
+    World[3][1] = 0.0f;
+    World[3][2] = 0.0f;
+    World[3][3] = 1.0f;
 
-    // Инициализируем glew
-    GLenum res = glewInit();
-    // Если инициализация не прошла удачно, выводим ошибку
-    if (res != GLEW_OK) {
-        std::cout << "Error: " << glewGetErrorString(res) << std::endl;
-        return 1;
-    }
+    // Разрешаем использование каждого атрибута вершины в конвейере (аттрибут вершины)
+    glEnableVertexAttribArray(0);
+    // Обратно привязываем буфер, приготавливая для отрисовки
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    // Говорим конвейеру, как воспринимать данные внутри буфера (индекс атрибута, количество аттрибутов,
+    // тип данных каждого компонента, нормализировать ли данные перед использованием, шаг - число байтов
+    // между двумя экземплярами атрибута, смещение первого компонента первого универсального атрибута вершины)
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
 
-    // Создаём вектор вершин (векторов из glm)
+    // Загружаем данные в uniform-переменные шейдера (адрес переменной, количество матриц,
+    // передаётся ли матрица по строкам, указатель на первый элемент матрицы)
+    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &World[0][0]);
+
+    // Устанавливаем цвет треугольника (RGBA)
+    glColor4f(0.f, 0.f, 0.f, 0.f);
+
+    // Вызываем функцию отрисовки (режим рисования, индекс первого элемента в буфере, количество элементов)
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    // Отключаем использование каждого атрибута вершины в конвейере [хороший тон]
+    glDisableVertexAttribArray(0);
+
+    // Меняем фоновый буфер и буфер кадра местами
+    glutSwapBuffers();
+}
+
+void initializeGlutCallbacks() {
+    // Задаём функции отрисовки
+    glutDisplayFunc(renderSceneCallback);
+    glutIdleFunc(renderSceneCallback);
+}
+
+void createVertexBuffer() {
     glm::vec3 vertices[3];
-    // Создаём вектора (x, y, z относительно центра экрана)
+
     vertices[0] = glm::vec3(-0.5f, -0.5f, 0.0f);
     vertices[1] = glm::vec3(0.8f, -1.0f, 0.0f);
     vertices[2] = glm::vec3(0.0f, 0.6f, 0.0f);
 
-    // Генерируем объект переменного типа (количество объектов, ссылка на массив для хранения)
     glGenBuffers(1, &VBO);
-    // Указываем OpenGL, что в VBO будет храниться массив вершин (цель, указатель на массив)
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    // Наполняем буфер (цель, размер в байтах, адрес массива вершин, флаг, обозначающий использование
-    // паттернов для данных)
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+}
 
-    // Задаём функцию отрисовки
-    glutDisplayFunc([]() {
-        // Очищаем окно
-        glClear(GL_COLOR_BUFFER_BIT);
+void addShader(GLuint shaderProgram, const std::string pShaderText, GLenum shaderType) {
+    // Создаём шейдер
+    GLuint shaderObj = glCreateShader(shaderType);
 
-        // Разрешаем использование каждого атрибута вершины в конвейере (аттрибут вершины)
-        glEnableVertexAttribArray(0);
-        // Обратно привязываем буфер, приготавливая для отрисовки
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        // Говорим конвейеру, как воспринимать данные внутри буфера (индекс атрибута, количество аттрибутов,
-        // тип данных каждого компонента, нормализировать ли данные перед использованием, шаг - число байтов
-        // между двумя экземплярами атрибута, смещение первого компонента первого универсального атрибута вершины)
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    if (shaderObj == 0) {
+        std::cerr << "Error: creating shader type " << shaderType << std::endl;
+        exit(1);
+    }
 
-        // Устанавливаем цвет треугольника (RGBA)
-        glColor4f(0.f, 0.f, 0.f, 0.f);
+    // Сохраняем код шейдера в массиве
+    const GLchar *p[1];
+    p[0] = pShaderText.c_str();
 
-        // Вызываем функцию отрисовки (режим рисования, индекс первого элемента в буфере, количество элементов)
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+    // Массив длин кодов шейдеров
+    GLint lengths[1];
+    lengths[0] = pShaderText.length();
 
-        // Отключаем использование каждого атрибута вершины в конвейере [хороший тон]
-        glDisableVertexAttribArray(0);
+    // Задаём исходники шейдера
+    glShaderSource(shaderObj, 1, p, lengths);
+    // Компилируем шейдер
+    glCompileShader(shaderObj);
 
-        // Меняем фоновый буфер и буфер кадра местами
-        glutSwapBuffers();
-    });
+    // Проверяем, что шейдер успешно скомпилировался
+    GLint success;
+    glGetShaderiv(shaderObj, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        GLchar infoLog[1024];
+        glGetShaderInfoLog(shaderObj, sizeof(infoLog), nullptr, infoLog);
+        std::cerr << "Error compiling shader type " << shaderType << ": '" << infoLog << "'" << std::endl;
+        exit(1);
+    }
 
-    // Запускаем основной цикл glut
+    // Добавляем шейдер в программу
+    glAttachShader(shaderProgram, shaderObj);
+}
+
+void compileShaders() {
+    // Создаём программу-шейдер
+    GLuint shaderProgram = glCreateProgram();
+    if (shaderProgram == 0) {
+        std::cerr << "Error creating shader program" << std::endl;
+        exit(1);
+    }
+
+    // Добавляем шейдер для вершин
+    addShader(shaderProgram, pVS, GL_VERTEX_SHADER);
+
+    GLint success = 0;
+    GLchar errorLog[1024] = {0};
+
+    // Линкуем программу
+    glLinkProgram(shaderProgram);
+    // Проверяем, что линковка прошла успешно
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if (success == 0) {
+        glGetProgramInfoLog(shaderProgram, sizeof(errorLog), nullptr, errorLog);
+        std::cerr << "Error linking shader program: '" << errorLog << "'" << std::endl;
+        exit(1);
+    }
+
+    // Валидируем программу
+    glValidateProgram(shaderProgram);
+    // Проверяем, что валидация прошла успешно
+    glGetProgramiv(shaderProgram, GL_VALIDATE_STATUS, &success);
+    if (success == 0) {
+        glGetProgramInfoLog(shaderProgram, sizeof(errorLog), nullptr, errorLog);
+        std::cerr << "Invalid shader program: '" << errorLog << "'" << std::endl;
+        exit(1);
+    }
+
+    // Указываем OpenGL, что надо использовать эту программу
+    glUseProgram(shaderProgram);
+
+    // Сохраняем местоположение переменной gWorld
+    gWorldLocation = glGetUniformLocation(shaderProgram, "gWorld");
+    assert(gWorldLocation != 0xFFFFFFFF);
+}
+
+int main(int argc, char **argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
+    glutInitWindowSize(1024, 768);
+    glutInitWindowPosition(100, 100);
+    glutCreateWindow("Tutorial 06");
+
+    // Инициализируем callback-функции
+    initializeGlutCallbacks();
+
+    GLenum res = glewInit();
+    if (res != GLEW_OK) {
+        std::cerr << "Error glew init: '" << glewGetErrorString(res) << "'" << std::endl;
+        return 1;
+    }
+
+    glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
+
+    createVertexBuffer();
+
+    compileShaders();
+
     glutMainLoop();
 
     return 0;
