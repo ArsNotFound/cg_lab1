@@ -3,6 +3,7 @@
 #include <glm/vec3.hpp>
 #include <iostream>
 #include <glm/ext/matrix_float4x4.hpp>
+#include "pipeline.h"
 
 // Хранит указатель на буфер вершин
 GLuint VBO;
@@ -24,57 +25,36 @@ static const std::string pVS = "// Версия шейдера 3.3              
                                "}";
 
 void renderSceneCallback() {
-    // Очищаем окно
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // Переменная для изменения значения X
+    // Переменная для изменения значений
     static float Scale = -1.0f;
 
     // С каждой отрисовкой увеличиваем Scale
     Scale += 0.001f;
 
-    // Подготавливаем матрицу 4x4 для изменения координаты X на значение синуса Scale
-    glm::mat4 World;
-    World[0][0] = sinf(Scale);
-    World[0][1] = 0.0f;
-    World[0][2] = 0.0f;
-    World[0][3] = 0.0f;
-    World[1][0] = 0.0f;
-    World[1][1] = cosf(Scale);
-    World[1][2] = 0.0f;
-    World[1][3] = 0.0f;
-    World[2][0] = 0.0f;
-    World[2][1] = 0.0f;
-    World[2][2] = sinf(Scale);
-    World[2][3] = 0.0f;
-    World[3][0] = 0.0f;
-    World[3][1] = 0.0f;
-    World[3][2] = 0.0f;
-    World[3][3] = 1.0f;
-
-    // Разрешаем использование каждого атрибута вершины в конвейере (аттрибут вершины)
-    glEnableVertexAttribArray(0);
-    // Обратно привязываем буфер, приготавливая для отрисовки
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    // Говорим конвейеру, как воспринимать данные внутри буфера (индекс атрибута, количество аттрибутов,
-    // тип данных каждого компонента, нормализировать ли данные перед использованием, шаг - число байтов
-    // между двумя экземплярами атрибута, смещение первого компонента первого универсального атрибута вершины)
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    // Создаём pipeline для трансформаций
+    Pipeline p;
+    // Меняем масштаб
+    p.scale(sinf(Scale * 0.1f), sinf(Scale * 0.1f), sinf(Scale * 0.1f));
+    // Двигаем треугольник по оси X
+    p.worldPos(sinf(Scale), 0.0f, 0.0f);
+    // Вращаем его по всем осям
+    p.rotate(sinf(Scale) * 90.0f, sinf(Scale) * 90.0f, sinf(Scale) * 90.0f);
 
     // Загружаем данные в uniform-переменные шейдера (адрес переменной, количество матриц,
     // передаётся ли матрица по строкам, указатель на первый элемент матрицы)
-    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &World[0][0]);
+    glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat *) p.getTransformation());
 
-    // Устанавливаем цвет треугольника (RGBA)
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+
     glColor4f(0.f, 0.f, 0.f, 0.f);
-
-    // Вызываем функцию отрисовки (режим рисования, индекс первого элемента в буфере, количество элементов)
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
-    // Отключаем использование каждого атрибута вершины в конвейере [хороший тон]
     glDisableVertexAttribArray(0);
 
-    // Меняем фоновый буфер и буфер кадра местами
     glutSwapBuffers();
 }
 
