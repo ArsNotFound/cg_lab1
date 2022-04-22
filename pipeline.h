@@ -18,27 +18,27 @@ public:
                  mTransformation(glm::mat4()) {}
 
     // Функция задания изменения масштаба
-    void scale(float scaleX, float scaleY, float scaleZ) {
+    void setScale(float scaleX, float scaleY, float scaleZ) {
         mScale[0] = scaleX;
         mScale[1] = scaleY;
         mScale[2] = scaleZ;
     }
 
     // Функция задания изменения положения
-    void worldPos(float x, float y, float z) {
+    void setWorldPos(float x, float y, float z) {
         mWorldPos[0] = x;
         mWorldPos[1] = y;
         mWorldPos[2] = z;
     }
 
     // Функция задания вращения
-    void rotate(float rotateX, float rotateY, float rotateZ) {
+    void setRotation(float rotateX, float rotateY, float rotateZ) {
         mRotateInfo[0] = rotateX;
         mRotateInfo[1] = rotateY;
         mRotateInfo[2] = rotateZ;
     }
 
-    void perspectiveProj(float FOV, float width, float height, float zNear, float zFar) {
+    void setPerspectiveProj(float FOV, float width, float height, float zNear, float zFar) {
         mPersProj.FOV = FOV;
         mPersProj.width = width;
         mPersProj.height = height;
@@ -46,16 +46,16 @@ public:
         mPersProj.zFar = zFar;
     }
 
+    void setCamera(const glm::vec3& pos, const glm::vec3 &target, const glm::vec3 &up) {
+        mCamera.pos = pos;
+        mCamera.target = target;
+        mCamera.up = up;
+    }
+
     // Функция получения итоговой матрицы
     const glm::mat4 *getTransformation();
 
 private:
-    // Вспомогательные функции
-    void initScaleTrans(glm::mat4 &m) const;
-    void initRotateTrans(glm::mat4 &m) const;
-    void initTranslationTrans(glm::mat4 &m) const;
-    void initPerspectiveProj(glm::mat4 &m) const;
-
     // Необходимые переменные
     glm::vec3 mScale;
     glm::vec3 mWorldPos;
@@ -68,6 +68,12 @@ private:
         float zNear;
         float zFar;
     } mPersProj;
+
+    struct {
+        glm::vec3 pos;
+        glm::vec3 target;
+        glm::vec3 up;
+    } mCamera;
 
     glm::mat4 mTransformation;
 };

@@ -206,21 +206,21 @@ public:
                  mTransformation(glm::mat4()) {}
 
     // Функция задания изменения масштаба
-    void scale(float scaleX, float scaleY, float scaleZ) {
+    void setScale(float scaleX, float scaleY, float scaleZ) {
         mScale[0] = scaleX;
         mScale[1] = scaleY;
         mScale[2] = scaleZ;
     }
 
     // Функция задания изменения положения
-    void worldPos(float x, float y, float z) {
+    void setWorldPos(float x, float y, float z) {
         mWorldPos[0] = x;
         mWorldPos[1] = y;
         mWorldPos[2] = z;
     }
 
     // Функция задания вращения
-    void rotate(float rotateX, float rotateY, float rotateZ) {
+    void setRotation(float rotateX, float rotateY, float rotateZ) {
         mRotateInfo[0] = rotateX;
         mRotateInfo[1] = rotateY;
         mRotateInfo[2] = rotateZ;
@@ -250,11 +250,11 @@ private:
 // Создаём pipeline для трансформаций
 Pipeline p;
 // Меняем масштаб
-p.scale(sinf(Scale * 0.1f), sinf(Scale * 0.1f), sinf(Scale * 0.1f));
+p.setScale(sinf(Scale * 0.1f), sinf(Scale * 0.1f), sinf(Scale * 0.1f));
 // Двигаем треугольник по оси X
-p.worldPos(sinf(Scale), 0.0f, 0.0f);
+p.setWorldPos(sinf(Scale), 0.0f, 0.0f);
 // Вращаем его по всем осям
-p.rotate(sinf(Scale) * 90.0f, sinf(Scale) * 90.0f, sinf(Scale) * 90.0f);
+p.setRotation(sinf(Scale) * 90.0f, sinf(Scale) * 90.0f, sinf(Scale) * 90.0f);
 
 // Загружаем данные в uniform-переменные шейдера (адрес переменной, количество матриц,
 // передаётся ли матрица по строкам, указатель на первый элемент матрицы)
@@ -283,7 +283,7 @@ struct {
     float zFar;
 } mPersProj;
 
-void perspectiveProj(float FOV, float width, float height, float zNear, float zFar) {
+void setPerspectiveProj(float FOV, float width, float height, float zNear, float zFar) {
     mPersProj.FOV = FOV;
     mPersProj.width = width;
     mPersProj.height = height;
@@ -324,13 +324,13 @@ void main() {
 // Создаём pipeline для трансформаций
 Pipeline p;
 // Меняем масштаб
-p.scale(0.1f, 0.1f, 0.1f);
+p.setScale(0.1f, 0.1f, 0.1f);
 // Вращаем фигуру
-p.rotate(0, Scale, 0);
+p.setRotation(0, Scale, 0);
 // Устанавливаем положение фигуры
-p.worldPos(0.0f, 0.0f, 100.0f);
+p.setWorldPos(0.0f, 0.0f, 100.0f);
 // Задаём проекцию перспективы
-p.perspectiveProj(90.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 10.0f, 10000.0f);
+p.setPerspectiveProj(90.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 10.0f, 10000.0f);
 ```
 
 Создадим вектор индексов:

@@ -10,5 +10,5 @@ out vec4 Color;
 void main() {
     // Умножаем вектор вершин на всемирную матрицу для смещения треугольника
     gl_Position = gWorld * vec4(Position, 1.0);
-    Color = vec4(clamp(Position, 0.0, 1.0), 1.0);
+    Color = vec4(clamp(Position, 0.0, 0.5), 1.0);
 }

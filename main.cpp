@@ -30,9 +30,15 @@ void renderSceneCallback() {
 
     // Создаём pipeline для трансформаций
     Pipeline p;
-    p.rotate(0.0f, Scale, 0.0f);
-    p.worldPos(0.0f, 0.0f, 5.0f);
-    p.perspectiveProj(60.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 100.0f);
+    p.setCamera(
+            glm::vec3(1.0f, 1.0f, -3.0f),
+            glm::vec3(0.45f, 0.0f, 1.0f),
+            glm::vec3(0.0f, 1.0f, 0.0f)
+    );
+    p.setScale(0.001f, 0.001f, 0.001f);
+    p.setRotation(0.0f, Scale, 1.0f);
+    p.setWorldPos(0.0f, 0.0f, 3.0f);
+    p.setPerspectiveProj(60.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 100.0f);
 
     glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat *) p.getTransformation());
 
@@ -41,7 +47,7 @@ void renderSceneCallback() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
-    glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
 
     glDisableVertexAttribArray(0);
 
@@ -55,12 +61,16 @@ void initializeGlutCallbacks() {
 }
 
 void createVertexBuffer() {
-    glm::vec3 vertices[4];
+    glm::vec3 vertices[8];
 
-    vertices[0] = glm::vec3(-1.0f, -1.0f, 0.5773f);
-    vertices[1] = glm::vec3(0.0f, -1.0f, -1.15475f);
-    vertices[2] = glm::vec3(1.0f, -1.0f, 0.5773f);
-    vertices[3] = glm::vec3(0.0f, 1.0f, 0.0f);
+    vertices[0] = glm::vec3 (0.5f, 0.5f, 0.5f);
+    vertices[1] = glm::vec3 (-0.5f, 0.5f, -0.5f);
+    vertices[2] = glm::vec3 (-0.5f, 0.5f, 0.5f);
+    vertices[3] = glm::vec3 (0.5f, -0.5f, -0.5f);
+    vertices[4] = glm::vec3 (-0.5f, -0.5f, -0.5f);
+    vertices[5] = glm::vec3 (0.5f, 0.5f, -0.5f);
+    vertices[6] = glm::vec3 (0.5f, -0.5f, 0.5f);
+    vertices[7] = glm::vec3 (-0.5f, -0.5f, 0.5f);
 
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -69,10 +79,18 @@ void createVertexBuffer() {
 
 void createIndexBuffer() {
     unsigned int indices[] = {
-            0, 3, 1,
-            1, 3, 2,
-            2, 3, 0,
-            0, 2, 1
+            0, 1, 2,
+            1, 3, 4,
+            5, 6, 3,
+            7, 3, 6,
+            2, 4, 7,
+            0, 7, 6,
+            0, 5, 1,
+            1, 5, 3,
+            5, 0, 6,
+            7, 4, 3,
+            2, 1, 4,
+            0, 2, 7
     };
 
     glGenBuffers(1, &IBO);
@@ -200,6 +218,10 @@ int main(int argc, char **argv) {
     }
 
     glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
+
+    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CW);
+    glCullFace(GL_BACK);
 
     createVertexBuffer();
 
