@@ -3,6 +3,7 @@
 #include <glm/vec3.hpp>
 #include <iostream>
 #include <glm/ext/matrix_float4x4.hpp>
+#include <fstream>
 #include "pipeline.h"
 
 // Задаём параметры окна
@@ -16,37 +17,7 @@ GLuint VBO;
 GLuint IBO;
 
 // Указатель на всемирную матрицу
-GLuint gWorldLocation;
-
-// Программа-шейдер
-static const std::string pVS = "// Версия шейдера 3.3                                                      \n"
-                               "#version 330                                                               \n"
-                               "// Входной тип данных - vec3 в позиции 0                                   \n"
-                               "layout (location = 0) in vec3 Position;                                    \n"
-                               "// uniform-переменная типа mat4                                            \n"
-                               "uniform mat4 gWorld;                                                       \n"
-                               "                                                                           \n"
-                               "out vec4 Color;                                                            \n"
-                               "                                                                           \n"
-                               "void main() {                                                              \n"
-                               "  // Умножаем вектор вершин на всемирную матрицу для смещения треугольника \n"
-                               "  gl_Position = gWorld * vec4(Position, 1.0);                              \n"
-                               "  Color = vec4(clamp(Position, 0.0, 0.5), 1.0);                            \n"
-                               "}                                                                          \n"
-                               "";
-
-static const std::string pFS = "// Версия шейдера 3.3                                                      \n"
-                               "#version 330                                                               \n"
-                               "                                                                           \n"
-                               "in vec4 Color;                                                             \n"
-                               "out vec4 FragColor;                                                        \n"
-                               "                                                                           \n"
-                               "void main() {                                                              \n"
-                               "  // Устанавливаем цвет                                                    \n"
-                               "  FragColor = Color;                                                       \n"
-                               "}                                                                          \n"
-                               "";
-
+GLint gWorldLocation;
 
 void renderSceneCallback() {
     glClear(GL_COLOR_BUFFER_BIT);
@@ -59,17 +30,10 @@ void renderSceneCallback() {
 
     // Создаём pipeline для трансформаций
     Pipeline p;
-    // Меняем масштаб
-    p.scale(0.1f, 0.1f, 0.1f);
-    // Вращаем фигуру
-    p.rotate(0, Scale, 0);
-    // Устанавливаем положение фигуры
-    p.worldPos(0.0f, 0.0f, 100.0f);
-    // Задаём проекцию перспективы
-    p.perspectiveProj(90.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 10.0f, 10000.0f);
+    p.rotate(0.0f, Scale, 0.0f);
+    p.worldPos(0.0f, 0.0f, 5.0f);
+    p.perspectiveProj(60.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 100.0f);
 
-    // Загружаем данные в uniform-переменные шейдера (адрес переменной, количество матриц,
-    // передаётся ли матрица по строкам, указатель на первый элемент матрицы)
     glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat *) p.getTransformation());
 
     glEnableVertexAttribArray(0);
@@ -116,8 +80,27 @@ void createIndexBuffer() {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 }
 
+std::string readFile(const std::string &filePath) {
+    std::string content;
+    std::ifstream fileStream(filePath, std::ios::in);
+
+    if (!fileStream.is_open()) {
+        std::cerr << "Error: could not read file " << filePath << ". File does not exist" << std::endl;
+        exit(1);
+    }
+
+    std::string line;
+    while (!fileStream.eof()) {
+        std::getline(fileStream, line);
+        content.append(line + "\n");
+    }
+
+    fileStream.close();
+    return content;
+}
+
 // Функция, добавляющая шейдер к программе
-void addShader(GLuint shaderProgram, const std::string pShaderText, GLenum shaderType) {
+void addShader(GLuint shaderProgram, const std::string &pShaderText, GLenum shaderType) {
     // Создаём шейдер
     GLuint shaderObj = glCreateShader(shaderType);
 
@@ -132,7 +115,7 @@ void addShader(GLuint shaderProgram, const std::string pShaderText, GLenum shade
 
     // Массив длин кодов шейдеров
     GLint lengths[1];
-    lengths[0] = pShaderText.length();
+    lengths[0] = static_cast<GLint>(pShaderText.length());
 
     // Задаём исходники шейдера
     glShaderSource(shaderObj, 1, p, lengths);
@@ -163,8 +146,10 @@ void compileShaders() {
     }
 
     // Добавляем шейдер для вершин
+    const auto pVS = readFile("./vertex.glsl");
     addShader(shaderProgram, pVS, GL_VERTEX_SHADER);
     // Добавляем шейдер для фрагментов
+    const auto pFS = readFile("./fragment.glsl");
     addShader(shaderProgram, pFS, GL_FRAGMENT_SHADER);
 
     GLint success = 0;

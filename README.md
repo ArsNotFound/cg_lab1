@@ -270,7 +270,7 @@ glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat *) p.getTransforma
 #define WINDOW_HEIGHT 768
 ```
 
-В пайплайн добавляем вспомогательные методы и переменную:
+В пайплайн доба цвляем вспомогательные методы и переменную:
 
 ```c++
 void initPerspectiveProj(glm::mat4 &m) const;
@@ -357,3 +357,7 @@ void createIndexBuffer() {
 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, nullptr);
 ```
+
+### Ручные расчёты
+
+Проведём следующее преобразование: сдвинем фигуру на вектор (-0.5f, 0.25f, 0.6f), изменим масштаб по каждой координате 
