@@ -6,7 +6,7 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 find_package(glm REQUIRED)
 
-add_executable(cg_lab1 main.cpp pipeline.cpp pipeline.h)
+add_executable(cg_lab1 main.cpp pipeline.cpp pipeline.h Camera.cpp Camera.h)
 
 target_link_libraries(cg_lab1 GL GLU glut GLEW glm)
 

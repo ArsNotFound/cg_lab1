@@ -4,9 +4,6 @@
 #include <cmath>
 #include <glm/detail/type_mat4x4.hpp>
 
-// Макросы преобразования градусов в радианы и наоборот
-#define ToRadian(x) ((x) * M_PI / 180.0f)
-
 // Пайплайн для преобразований
 class Pipeline {
 public:
@@ -56,26 +53,25 @@ public:
     const glm::mat4 *getTransformation();
 
 private:
-    // Необходимые переменные
-    glm::vec3 mScale;
-    glm::vec3 mWorldPos;
-    glm::vec3 mRotateInfo;
+    glm::vec3 mScale;      // Масштаб
+    glm::vec3 mWorldPos;   // Позиция
+    glm::vec3 mRotateInfo; // Вращение
 
     struct {
-        float FOV;
-        float width;
-        float height;
-        float zNear;
-        float zFar;
+        float FOV;         // Поле зрения (в градусах)
+        float width;       // Ширина экрана
+        float height;      // Высота экрана
+        float zNear;       // Ближайшая глубина зрения
+        float zFar;        // Дальнейшая глубина зрения
     } mPersProj;
 
     struct {
-        glm::vec3 pos;
-        glm::vec3 target;
-        glm::vec3 up;
+        glm::vec3 pos;     // Позиция камеры
+        glm::vec3 target;  // Направление камеры
+        glm::vec3 up;      // "Вверх" камеры
     } mCamera;
 
-    glm::mat4 mTransformation;
+    glm::mat4 mTransformation; // Мировая матрица
 };
 
 

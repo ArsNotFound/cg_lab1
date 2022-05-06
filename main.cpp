@@ -5,6 +5,9 @@
 #include <glm/ext/matrix_float4x4.hpp>
 #include <fstream>
 #include "pipeline.h"
+#include "Camera.h"
+
+#include <glm/gtx/string_cast.hpp>
 
 // Задаём параметры окна
 #define WINDOW_WIDTH 1024
@@ -19,6 +22,9 @@ GLuint IBO;
 // Указатель на всемирную матрицу
 GLint gWorldLocation;
 
+// Камера
+Camera *gameCamera = nullptr;
+
 void renderSceneCallback() {
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -28,16 +34,14 @@ void renderSceneCallback() {
     // С каждой отрисовкой увеличиваем Scale
     Scale += 0.1f;
 
+    // Обновляем камеру при рендере
+    gameCamera->onRender();
+
     // Создаём pipeline для трансформаций
     Pipeline p;
-    p.setCamera(
-            glm::vec3(1.0f, 1.0f, -3.0f),
-            glm::vec3(0.45f, 0.0f, 1.0f),
-            glm::vec3(0.0f, 1.0f, 0.0f)
-    );
-    p.setScale(0.001f, 0.001f, 0.001f);
-    p.setRotation(0.0f, Scale, 1.0f);
-    p.setWorldPos(0.0f, 0.0f, 3.0f);
+    p.setRotation(0.0f, Scale, 0.0f);
+    p.setWorldPos(0.0f, 0.0f, 1.0f);
+    p.setCamera(gameCamera->getPos(), gameCamera->getTarget(), gameCamera->getUp());
     p.setPerspectiveProj(60.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 100.0f);
 
     glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, (const GLfloat *) p.getTransformation());
@@ -47,50 +51,61 @@ void renderSceneCallback() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
 
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, nullptr);
 
     glDisableVertexAttribArray(0);
 
     glutSwapBuffers();
 }
 
-void initializeGlutCallbacks() {
-    // Задаём функции отрисовки
-    glutDisplayFunc(renderSceneCallback);
-    glutIdleFunc(renderSceneCallback);
+// Callback нажатия клавиши
+void specialKeyboardCallback(int key, __attribute__((unused)) int x, __attribute__((unused)) int y) {
+    gameCamera->onKeyPressed(key);
 }
 
-void createVertexBuffer() {
-    glm::vec3 vertices[8];
+// Callback движения мыши
+void passiveMouseCallback(int x, int y) {
+    gameCamera->onMouse(x, y);
+}
 
-    vertices[0] = glm::vec3 (0.5f, 0.5f, 0.5f);
-    vertices[1] = glm::vec3 (-0.5f, 0.5f, -0.5f);
-    vertices[2] = glm::vec3 (-0.5f, 0.5f, 0.5f);
-    vertices[3] = glm::vec3 (0.5f, -0.5f, -0.5f);
-    vertices[4] = glm::vec3 (-0.5f, -0.5f, -0.5f);
-    vertices[5] = glm::vec3 (0.5f, 0.5f, -0.5f);
-    vertices[6] = glm::vec3 (0.5f, -0.5f, 0.5f);
-    vertices[7] = glm::vec3 (-0.5f, -0.5f, 0.5f);
+// Callback нажатия клавиши
+void keyboardCallback(unsigned char Key, int x, int y) {
+    switch (Key) {
+        case 'q':
+            exit(0);
+    }
+}
+
+// Задаём callback функции
+void initializeGlutCallbacks() {
+    glutDisplayFunc(renderSceneCallback);
+    glutIdleFunc(renderSceneCallback);
+    glutSpecialFunc(specialKeyboardCallback);
+    glutPassiveMotionFunc(passiveMouseCallback);
+    glutKeyboardFunc(keyboardCallback);
+}
+
+// Создание буфера вершин
+void createVertexBuffer() {
+    glm::vec3 vertices[] = {
+            glm::vec3(-1.0f, -1.0f, 0.5773f),
+            glm::vec3(0.0f, -1.0f, -1.15475f),
+            glm::vec3(1.0f, -1.0f, 0.5773f),
+            glm::vec3(0.0f, 1.0f, 0.0f),
+    };
 
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 }
 
+// Создание буфера индексов
 void createIndexBuffer() {
     unsigned int indices[] = {
-            0, 1, 2,
-            1, 3, 4,
-            5, 6, 3,
-            7, 3, 6,
-            2, 4, 7,
-            0, 7, 6,
-            0, 5, 1,
-            1, 5, 3,
-            5, 0, 6,
-            7, 4, 3,
-            2, 1, 4,
-            0, 2, 7
+            0, 3, 1,
+            1, 3, 2,
+            2, 3, 0,
+            0, 2, 1,
     };
 
     glGenBuffers(1, &IBO);
@@ -98,6 +113,7 @@ void createIndexBuffer() {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 }
 
+// Функция чтения файла
 std::string readFile(const std::string &filePath) {
     std::string content;
     std::ifstream fileStream(filePath, std::ios::in);
@@ -206,7 +222,12 @@ int main(int argc, char **argv) {
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
     glutInitWindowPosition(100, 100);
-    glutCreateWindow("Tutorial 12");
+//    glutCreateWindow("Tutorial 12");
+    // Инициализируем callback-функции
+    initializeGlutCallbacks();
+
+    glutGameModeString("1920x1080");
+    glutEnterGameMode();
 
     // Инициализируем callback-функции
     initializeGlutCallbacks();
@@ -217,7 +238,9 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
+    gameCamera = new Camera(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     glEnable(GL_CULL_FACE);
     glFrontFace(GL_CW);

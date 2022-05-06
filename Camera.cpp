@@ -1,64 +1,9 @@
-# CG LAB 3
+#include "Camera.h"
+#include <GL/freeglut.h>
+#include <glm/geometric.hpp>
+#include <glm/gtx/rotate_vector.hpp>
+#include <iostream>
 
-Третья лабораторная работа по компьютерной графике.
-
-## Выполнено:
-
-### Рефакторинг класса Pipeline
-
-### Создание класса камеры
-
-```c++
-class Camera {
-public:
-    Camera(int windowWidth, int windowHeight);
-
-    Camera(int windowWidth, int windowHeight, const glm::vec3 &pos, const glm::vec3 &target, const glm::vec3 &up);
-
-    const glm::vec3 &getPos() const {
-        return mPos;
-    }
-
-    const glm::vec3 &getTarget() const {
-        return mTarget;
-    }
-
-    const glm::vec3 &getUp() const {
-        return mUp;
-    }
-
-    bool onKeyPressed(int key);
-
-    void onMouse(int x, int y);
-
-    void onRender();
-
-private:
-    void init();
-
-    void update();
-
-    glm::vec3 mPos;    // Позиция камеры
-    glm::vec3 mTarget; // Направление камеры
-    glm::vec3 mUp;     // "Вверх" камеры
-
-    int mWindowWidth;  // Ширина экрана
-    int mWindowHeight; // Высота экрана
-
-    float mAngleH;     // Горизонтальный угол
-    float mAngleV;     // Вертикальный угол
-
-    // Переменные, показывающие, что камера находится на одном из краёв экрана
-    bool mOnUpperEdge;
-    bool mOnLowerEdge;
-    bool mOnLeftEdge;
-    bool mOnRightEdge;
-
-    glm::ivec2 mMousePos; // Позиция мыши
-};
-```
-
-```c++
 // Конструкторы камеры
 Camera::Camera(int windowWidth, int windowHeight) :
         mWindowWidth(windowWidth),
@@ -146,6 +91,7 @@ void Camera::onMouse(int x, int y) {
 
     mAngleH += (float) dX / 20.0f;
     mAngleV += (float) dY / 20.0f;
+    std::cout << x << " " << y << std::endl;
 
     if (dX == 0) {
         if (x <= MARGIN)
@@ -209,25 +155,3 @@ void Camera::onRender() {
     if (shouldUpdate)
         update();
 }
-```
-
-### Задание callback функций для обработки нажатий на клавиши и движения мыши
-```c++
-// Callback нажатия клавиши
-void specialKeyboardCallback(int key, __attribute__((unused)) int x, __attribute__((unused)) int y) {
-    gameCamera->onKeyPressed(key);
-}
-
-// Callback движения мыши
-void passiveMouseCallback(int x, int y) {
-    gameCamera->onMouse(x, y);
-}
-
-// Callback нажатия клавиши
-void keyboardCallback(unsigned char Key, int x, int y) {
-    switch (Key) {
-        case 'q':
-            exit(0);
-    }
-}
-```
