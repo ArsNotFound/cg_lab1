@@ -1,24 +1,24 @@
-#include <GL/glew.h>
 #include <GL/freeglut.h>
+#include <GL/glew.h>
+
+#include <glm/gtx/string_cast.hpp>
 #include <iostream>
 #include <memory>
 
+#include "Camera.h"
 #include "GLUTBackend.h"
 #include "ICallbacks.h"
 #include "LightingTechnique.h"
-#include "Texture.h"
-#include "Camera.h"
-#include "Vertex.h"
 #include "Pipeline.h"
+#include "Texture.h"
 #include "utils.h"
-
-#include <glm/gtx/string_cast.hpp>
+#include "Vertex.h"
 
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
 
 class Main : public ICallbacks {
-public:
+    public:
     Main() : mScale(0.0f) {
         mDirectionalLight.color = glm::vec3(1.0f, 1.0f, 1.0f);
         mDirectionalLight.ambientIntensity = -0.1f;
@@ -32,37 +32,31 @@ public:
         glm::vec3 pos(0.0f, 0.0f, 0.0f);
         glm::vec3 target(0.0f, 0.0f, 1.0f);
         glm::vec3 up(0.0f, 1.0f, 0.0f);
-        mGameCamera = std::make_unique<Camera>(WINDOW_WIDTH, WINDOW_HEIGHT, pos, target, up);
+        mGameCamera = std::make_unique<Camera>(WINDOW_WIDTH, WINDOW_HEIGHT, pos,
+                                               target, up);
 
         vertices = {
-                Vertex(glm::vec3(-10.0f, -2.0f, -10.0f), glm::vec2(0.0f, 0.0f)),
-                Vertex(glm::vec3(10.0f, -2.0f, -10.0f), glm::vec2(1.0f, 0.0f)),
-                Vertex(glm::vec3(10.0f, -2.0f, 10.0f), glm::vec2(1.0f, 1.0f)),
-                Vertex(glm::vec3(-10.0f, -2.0f, 10.0f), glm::vec2(0.0f, 1.0f))
-        };
+            Vertex(glm::vec3(-10.0f, -2.0f, -10.0f), glm::vec2(0.0f, 0.0f)),
+            Vertex(glm::vec3(10.0f, -2.0f, -10.0f), glm::vec2(1.0f, 0.0f)),
+            Vertex(glm::vec3(10.0f, -2.0f, 10.0f), glm::vec2(1.0f, 1.0f)),
+            Vertex(glm::vec3(-10.0f, -2.0f, 10.0f), glm::vec2(0.0f, 1.0f))};
 
-        indices = {
-                0, 2, 1,
-                0, 3, 2
-        };
+        indices = {0, 2, 1, 0, 3, 2};
 
         calcNormals(indices, vertices);
 
         createBuffers();
 
         mEffect = std::make_unique<LightingTechnique>(
-                "./shaders/vertex.glsl",
-                "./shaders/fragment.glsl"
-        );
-        if (!mEffect->init())
-            return false;
+            "./shaders/vertex.glsl", "./shaders/fragment.glsl");
+        if (!mEffect->init()) return false;
 
         mEffect->enable();
         mEffect->setTextureUnit(0);
 
-        mTexture = std::make_unique<Texture>(GL_TEXTURE_2D, "./content/test.png");
-        if (!mTexture->load())
-            return false;
+        mTexture =
+            std::make_unique<Texture>(GL_TEXTURE_2D, "./content/test.png");
+        if (!mTexture->load()) return false;
 
         return true;
     }
@@ -73,24 +67,26 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         mScale += 0.1f;
-//
-//        std::vector<PointLight> pl(3);
-//        pl[0].diffuseIntensity = 0.5f;
-//        pl[0].color = glm::vec3(1.0f, 0.0f, 0.0f);
-//        pl[0].position = glm::vec3(sinf(mScale) * 10, 1.0f, cosf(mScale) * 10);
-//        pl[0].attenuation.linear = 0.1f;
-//
-//        pl[1].diffuseIntensity = 0.5f;
-//        pl[1].color = glm::vec3(0.0f, 1.0f, 0.0f);
-//        pl[1].position = glm::vec3(sinf(mScale + 2.1f) * 10, 1.0f, cosf(mScale + 2.1f) * 10);
-//        pl[1].attenuation.linear = 0.1f;
-//
-//        pl[2].diffuseIntensity = 0.5f;
-//        pl[2].color = glm::vec3(0.0f, 0.0f, 1.0f);
-//        pl[2].position = glm::vec3(sinf(mScale + 4.2f) * 10, 1.0f, cosf(mScale + 4.2f) * 10);
-//        pl[2].attenuation.linear = 0.1f;
-//
-//        mEffect->setPointLights(pl);
+        //
+        //        std::vector<PointLight> pl(3);
+        //        pl[0].diffuseIntensity = 0.5f;
+        //        pl[0].color = glm::vec3(1.0f, 0.0f, 0.0f);
+        //        pl[0].position = glm::vec3(sinf(mScale) * 10, 1.0f,
+        //        cosf(mScale) * 10); pl[0].attenuation.linear = 0.1f;
+        //
+        //        pl[1].diffuseIntensity = 0.5f;
+        //        pl[1].color = glm::vec3(0.0f, 1.0f, 0.0f);
+        //        pl[1].position = glm::vec3(sinf(mScale + 2.1f) * 10, 1.0f,
+        //        cosf(mScale + 2.1f) * 10); pl[1].attenuation.linear =
+        //        0.1f;
+        //
+        //        pl[2].diffuseIntensity = 0.5f;
+        //        pl[2].color = glm::vec3(0.0f, 0.0f, 1.0f);
+        //        pl[2].position = glm::vec3(sinf(mScale + 4.2f) * 10, 1.0f,
+        //        cosf(mScale + 4.2f) * 10); pl[2].attenuation.linear =
+        //        0.1f;
+        //
+        //        mEffect->setPointLights(pl);
 
         std::vector<SpotLight> sl(2);
 
@@ -113,17 +109,11 @@ public:
         Pipeline p;
         p.setRotation(0.0f, 0.0f, 0.0f);
         p.setWorldPos(0.0f, 0.0f, 1.0f);
-        p.setCamera(mGameCamera->getPos(), mGameCamera->getTarget(), mGameCamera->getUp());
+        p.setCamera(mGameCamera->getPos(), mGameCamera->getTarget(),
+                    mGameCamera->getUp());
         p.setPerspectiveProj(60.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 0.01f, 100.0f);
 
         const auto wvpTransformation = p.getWVPTransformation();
-
-//        static auto prevWVP = glm::mat4(0.0f);
-//        if (wvpTransformation != prevWVP) {
-//            std::cout << glm::to_string(wvpTransformation) << std::endl;
-//            prevWVP = wvpTransformation;
-//        }
-
         const auto worldTransformation = p.getWorldTransformation();
 
         static auto prevWorld = glm::mat4(0.0f);
@@ -143,16 +133,15 @@ public:
         mTexture->bind(GL_TEXTURE0);
 
         glBindVertexArray(mVAO);
-//        glDrawElements(GL_TRIANGLE_FAN, 6, GL_UNSIGNED_INT, nullptr);
+        //        glDrawElements(GL_TRIANGLE_FAN, 6, GL_UNSIGNED_INT,
+        //        nullptr);
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
         glBindVertexArray(0);
 
         glutSwapBuffers();
     }
 
-    void idleCB() override {
-        renderSceneCB();
-    }
+    void idleCB() override { renderSceneCB(); }
 
     void specialKeyboardCB(int key, int x, int y) override {
         mGameCamera->onKeyPressed(key);
@@ -181,11 +170,9 @@ public:
         }
     }
 
-    void passiveMouseCB(int x, int y) override {
-        mGameCamera->onMouse(x, y);
-    }
+    void passiveMouseCB(int x, int y) override { mGameCamera->onMouse(x, y); }
 
-private:
+    private:
     GLuint mVAO;
     GLuint mVBO;
     GLuint mIBO;
@@ -213,9 +200,11 @@ private:
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIBO);
         glBufferDataVector(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
 
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid *>(VERTEX_POS_OFFSET));
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                              reinterpret_cast<GLvoid *>(VERTEX_POS_OFFSET));
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), reinterpret_cast<GLvoid *>(VERTEX_TEX_OFFSET));
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+                              reinterpret_cast<GLvoid *>(VERTEX_TEX_OFFSET));
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
                               reinterpret_cast<GLvoid *>(VERTEX_NORMAL_OFFSET));
@@ -224,7 +213,8 @@ private:
         glBindVertexArray(0);
     }
 
-    static void calcNormals(const std::vector<GLuint> &indices, std::vector<Vertex> &vertices) {
+    static void calcNormals(const std::vector<GLuint> &indices,
+                            std::vector<Vertex> &vertices) {
         for (auto i = 0; i < indices.size(); i += 3) {
             auto index0 = indices[i];
             auto index1 = indices[i + 1];
@@ -238,7 +228,7 @@ private:
             vertices[index2].mNormal += normal;
         }
 
-        for (auto &vertex: vertices) {
+        for (auto &vertex : vertices) {
             vertex.mNormal = glm::normalize(vertex.mNormal);
         }
     }
@@ -247,13 +237,13 @@ private:
 int main(int argc, char **argv) {
     GLUTBackend::init(argc, argv);
 
-    if (!GLUTBackend::createWindow(WINDOW_WIDTH, WINDOW_HEIGHT, false, "Tutorial 17"))
+    if (!GLUTBackend::createWindow(WINDOW_WIDTH, WINDOW_HEIGHT, false,
+                                   "Tutorial 17"))
         return 1;
 
     auto app = std::make_shared<Main>();
 
-    if (!app->init())
-        return 1;
+    if (!app->init()) return 1;
 
     GLUTBackend::run(app);
 

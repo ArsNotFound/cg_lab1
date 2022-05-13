@@ -2,17 +2,18 @@
 #define CG_LAB1_PIPELINE_H
 
 #include <cmath>
-#include <glm/detail/type_mat4x4.hpp>
+#include <glm/glm.hpp>
 
 // Пайплайн для преобразований
 class Pipeline {
-public:
+    public:
     // Конструктор для начальных значений
-    Pipeline() : mScale(glm::vec3(1.0f, 1.0f, 1.0f)),
-                 mWorldPos(glm::vec3(0.0f, 0.0f, 0.0f)),
-                 mRotation(glm::vec3(0.0f, 0.0f, 0.0f)),
-                 mPersProj(),
-                 mWVPTransformation(glm::mat4()) {}
+    Pipeline()
+        : mScale(glm::vec3(1.0f, 1.0f, 1.0f)),
+          mWorldPos(glm::vec3(0.0f, 0.0f, 0.0f)),
+          mRotation(glm::vec3(0.0f, 0.0f, 0.0f)),
+          mPersProj(),
+          mWVPTransformation(glm::mat4()) {}
 
     // Функция задания изменения масштаба
     void setScale(float scaleX, float scaleY, float scaleZ) {
@@ -35,7 +36,8 @@ public:
         mRotation[2] = rotateZ;
     }
 
-    void setPerspectiveProj(float FOV, float width, float height, float zNear, float zFar) {
+    void setPerspectiveProj(float FOV, float width, float height, float zNear,
+                            float zFar) {
         mPersProj.FOV = FOV;
         mPersProj.width = width;
         mPersProj.height = height;
@@ -43,7 +45,8 @@ public:
         mPersProj.zFar = zFar;
     }
 
-    void setCamera(const glm::vec3& pos, const glm::vec3 &target, const glm::vec3 &up) {
+    void setCamera(const glm::vec3 &pos, const glm::vec3 &target,
+                   const glm::vec3 &up) {
         mCamera.pos = pos;
         mCamera.target = target;
         mCamera.up = up;
@@ -53,17 +56,17 @@ public:
 
     const glm::mat4 &getWVPTransformation();
 
-private:
-    glm::vec3 mScale;      // Масштаб
-    glm::vec3 mWorldPos;   // Позиция
-    glm::vec3 mRotation; // Вращение
+    private:
+    glm::vec3 mScale;     // Масштаб
+    glm::vec3 mWorldPos;  // Позиция
+    glm::vec3 mRotation;  // Вращение
 
     struct {
-        float FOV;         // Поле зрения (в градусах)
-        float width;       // Ширина экрана
-        float height;      // Высота экрана
-        float zNear;       // Ближайшая глубина зрения
-        float zFar;        // Дальнейшая глубина зрения
+        float FOV;     // Поле зрения (в градусах)
+        float width;   // Ширина экрана
+        float height;  // Высота экрана
+        float zNear;   // Ближайшая глубина зрения
+        float zFar;    // Дальнейшая глубина зрения
     } mPersProj;
 
     struct {
@@ -76,5 +79,4 @@ private:
     glm::mat4 mWorldTransformation;
 };
 
-
-#endif //CG_LAB1_PIPELINE_H
+#endif  // CG_LAB1_PIPELINE_H

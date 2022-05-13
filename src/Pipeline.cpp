@@ -1,7 +1,7 @@
 #include "Pipeline.h"
-#include <glm/trigonometric.hpp>
-#include <glm/gtx/transform.hpp>
 
+#include <glm/gtx/transform.hpp>
+#include <glm/trigonometric.hpp>
 
 const glm::mat4 &Pipeline::getWorldTransformation() {
     static const glm::vec3 xAxis(1.0f, 0.0f, 0.0f);
@@ -19,21 +19,14 @@ const glm::mat4 &Pipeline::getWorldTransformation() {
     return mWorldTransformation;
 }
 
-
 const glm::mat4 &Pipeline::getWVPTransformation() {
-    glm::mat4 persProjTrans = glm::perspectiveFov(
-            glm::radians(mPersProj.FOV),
-            mPersProj.width,
-            mPersProj.height,
-            mPersProj.zNear,
-            mPersProj.zFar
-    );
+    glm::mat4 persProjTrans =
+        glm::perspectiveFov(glm::radians(mPersProj.FOV), mPersProj.width,
+                            mPersProj.height, mPersProj.zNear, mPersProj.zFar);
 
-    glm::mat4 cameraTrans = glm::lookAt(mCamera.pos, mCamera.target, mCamera.up);
+    glm::mat4 cameraTrans =
+        glm::lookAt(mCamera.pos, mCamera.target, mCamera.up);
 
-    mWVPTransformation =
-            persProjTrans *
-            cameraTrans *
-            getWorldTransformation();
+    mWVPTransformation = persProjTrans * cameraTrans * getWorldTransformation();
     return mWVPTransformation;
 }

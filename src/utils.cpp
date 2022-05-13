@@ -8,7 +8,8 @@ std::string readFile(const std::string &filePath) {
     std::ifstream fileStream(filePath, std::ios::in);
 
     if (!fileStream.is_open()) {
-        std::cerr << "Error: could not read file " << filePath << ". File does not exist" << std::endl;
+        std::cerr << "Error: could not read file " << filePath
+                  << ". File does not exist" << std::endl;
         return "";
     }
 
@@ -21,4 +22,3 @@ std::string readFile(const std::string &filePath) {
     fileStream.close();
     return content;
 }
-

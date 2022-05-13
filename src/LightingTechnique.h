@@ -2,8 +2,8 @@
 #define CG_LAB1_LIGHTINGTECHNIQUE_H
 
 
-#include <glm/vec3.hpp>
-#include <glm/mat4x4.hpp>
+#include <glm/glm.hpp>
+
 #include <vector>
 
 #include "Technique.h"
@@ -95,7 +95,7 @@ private:
         GLint diffuseIntensity;
     };
 
-    struct: public sBaseLight {
+    struct : public sBaseLight {
         GLint direction;
     } mDirLightLocation;
 
@@ -115,7 +115,7 @@ private:
     GLint mNumPointLightsLocation;
     std::vector<sPointLight> mPointLightsLocation;
 
-    struct sSpotLight: public sPointLight {
+    struct sSpotLight : public sPointLight {
         GLint direction;
         GLint cutoff;
     };

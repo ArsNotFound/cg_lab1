@@ -1,12 +1,10 @@
 #include "GLUTBackend.h"
 
-#include <GL/glew.h>
 #include <GL/freeglut.h>
+#include <GL/glew.h>
 
 #include <boost/format.hpp>
-
 #include <iostream>
-
 
 std::shared_ptr<ICallbacks> sCallbacks;
 
@@ -18,17 +16,11 @@ void keyboardCB(unsigned char key, int x, int y) {
     sCallbacks->keyboardCB(key, x, y);
 }
 
-void passiveMouseCB(int x, int y) {
-    sCallbacks->passiveMouseCB(x, y);
-}
+void passiveMouseCB(int x, int y) { sCallbacks->passiveMouseCB(x, y); }
 
-void renderSceneCB() {
-    sCallbacks->renderSceneCB();
-}
+void renderSceneCB() { sCallbacks->renderSceneCB(); }
 
-void idleCB() {
-    sCallbacks->idleCB();
-}
+void idleCB() { sCallbacks->idleCB(); }
 
 void initCallbacks() {
     glutDisplayFunc(renderSceneCB);
@@ -41,12 +33,15 @@ void initCallbacks() {
 void GLUTBackend::init(int argc, char **argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
-    glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
+    glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE,
+                  GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 }
 
-bool GLUTBackend::createWindow(unsigned int width, unsigned int height, bool isFullscreen, const std::string &title) {
+bool GLUTBackend::createWindow(unsigned int width, unsigned int height,
+                               bool isFullscreen, const std::string &title) {
     if (isFullscreen) {
-        std::string modeString = (boost::format("%1%x%2%") % width % height).str();
+        std::string modeString =
+            (boost::format("%1%x%2%") % width % height).str();
         glutGameModeString(modeString.c_str());
         glutEnterGameMode();
     } else {
@@ -56,14 +51,15 @@ bool GLUTBackend::createWindow(unsigned int width, unsigned int height, bool isF
 
     GLenum res = glewInit();
     if (res != GLEW_OK) {
-        std::cerr << "Error glew init: '" << glewGetErrorString(res) << "'" << std::endl;
+        std::cerr << "Error glew init: '" << glewGetErrorString(res) << "'"
+                  << std::endl;
         return false;
     }
 
     return true;
 }
 
-void GLUTBackend::run(const std::shared_ptr<ICallbacks>& callbacks) {
+void GLUTBackend::run(const std::shared_ptr<ICallbacks> &callbacks) {
     if (!callbacks) {
         std::cerr << __FUNCTION__ << " : callbacks not specified!" << std::endl;
         return;
@@ -79,4 +75,3 @@ void GLUTBackend::run(const std::shared_ptr<ICallbacks>& callbacks) {
     initCallbacks();
     glutMainLoop();
 }
-

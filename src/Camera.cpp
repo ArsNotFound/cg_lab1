@@ -1,24 +1,27 @@
 #include "Camera.h"
+
 #include <GL/freeglut.h>
+
 #include <glm/geometric.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
 // Конструкторы камеры
-Camera::Camera(int windowWidth, int windowHeight) :
-        mWindowWidth(windowWidth),
-        mWindowHeight(windowHeight),
-        mPos(glm::vec3(0.0f, 0.0f, 0.0f)),
-        mTarget(glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f))),
-        mUp(glm::vec3(0.0f, 1.0f, 0.0f)) {
+Camera::Camera(int windowWidth, int windowHeight)
+    : mWindowWidth(windowWidth),
+      mWindowHeight(windowHeight),
+      mPos(glm::vec3(0.0f, 0.0f, 0.0f)),
+      mTarget(glm::normalize(glm::vec3(0.0f, 0.0f, 1.0f))),
+      mUp(glm::vec3(0.0f, 1.0f, 0.0f)) {
     init();
 }
 
-Camera::Camera(int windowWidth, int windowHeight, const glm::vec3 &pos, const glm::vec3 &target, const glm::vec3 &up) :
-        mWindowWidth(windowWidth),
-        mWindowHeight(windowHeight),
-        mPos(pos),
-        mTarget(glm::normalize(target)),
-        mUp(glm::normalize(up)) {
+Camera::Camera(int windowWidth, int windowHeight, const glm::vec3 &pos,
+               const glm::vec3 &target, const glm::vec3 &up)
+    : mWindowWidth(windowWidth),
+      mWindowHeight(windowHeight),
+      mPos(pos),
+      mTarget(glm::normalize(target)),
+      mUp(glm::normalize(up)) {
     init();
 }
 
@@ -88,8 +91,8 @@ void Camera::onMouse(int x, int y) {
     mMousePos.x = x;
     mMousePos.y = y;
 
-    mAngleH += (float) dX / 20.0f;
-    mAngleV += (float) dY / 20.0f;
+    mAngleH += (float)dX / 20.0f;
+    mAngleV += (float)dY / 20.0f;
 
     if (dX == 0) {
         if (x <= MARGIN)
@@ -150,6 +153,5 @@ void Camera::onRender() {
         shouldUpdate = true;
     }
 
-    if (shouldUpdate)
-        update();
+    if (shouldUpdate) update();
 }
