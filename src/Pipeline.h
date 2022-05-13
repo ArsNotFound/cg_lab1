@@ -10,9 +10,9 @@ public:
     // Конструктор для начальных значений
     Pipeline() : mScale(glm::vec3(1.0f, 1.0f, 1.0f)),
                  mWorldPos(glm::vec3(0.0f, 0.0f, 0.0f)),
-                 mRotateInfo(glm::vec3(0.0f, 0.0f, 0.0f)),
+                 mRotation(glm::vec3(0.0f, 0.0f, 0.0f)),
                  mPersProj(),
-                 mTransformation(glm::mat4()) {}
+                 mWVPTransformation(glm::mat4()) {}
 
     // Функция задания изменения масштаба
     void setScale(float scaleX, float scaleY, float scaleZ) {
@@ -30,9 +30,9 @@ public:
 
     // Функция задания вращения
     void setRotation(float rotateX, float rotateY, float rotateZ) {
-        mRotateInfo[0] = rotateX;
-        mRotateInfo[1] = rotateY;
-        mRotateInfo[2] = rotateZ;
+        mRotation[0] = rotateX;
+        mRotation[1] = rotateY;
+        mRotation[2] = rotateZ;
     }
 
     void setPerspectiveProj(float FOV, float width, float height, float zNear, float zFar) {
@@ -49,13 +49,14 @@ public:
         mCamera.up = up;
     }
 
-    // Функция получения итоговой матрицы
-    const glm::mat4 *getTransformation();
+    const glm::mat4 &getWorldTransformation();
+
+    const glm::mat4 &getWVPTransformation();
 
 private:
     glm::vec3 mScale;      // Масштаб
     glm::vec3 mWorldPos;   // Позиция
-    glm::vec3 mRotateInfo; // Вращение
+    glm::vec3 mRotation; // Вращение
 
     struct {
         float FOV;         // Поле зрения (в градусах)
@@ -71,7 +72,8 @@ private:
         glm::vec3 up;      // "Вверх" камеры
     } mCamera;
 
-    glm::mat4 mTransformation; // Мировая матрица
+    glm::mat4 mWVPTransformation;
+    glm::mat4 mWorldTransformation;
 };
 
 

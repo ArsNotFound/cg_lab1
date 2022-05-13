@@ -2,7 +2,6 @@
 #include <GL/freeglut.h>
 #include <glm/geometric.hpp>
 #include <glm/gtx/rotate_vector.hpp>
-#include <iostream>
 
 // Конструкторы камеры
 Camera::Camera(int windowWidth, int windowHeight) :
@@ -91,7 +90,6 @@ void Camera::onMouse(int x, int y) {
 
     mAngleH += (float) dX / 20.0f;
     mAngleV += (float) dY / 20.0f;
-    std::cout << x << " " << y << std::endl;
 
     if (dX == 0) {
         if (x <= MARGIN)
