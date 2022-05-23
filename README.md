@@ -4,8 +4,6 @@
 
 ## Выполнено:
 
-### Рефакторинг класса Pipeline
-
 ### Создание класса камеры
 
 ```c++
@@ -99,4 +97,156 @@ private:
     Magick::Blob mBlob;     // Данные изображения
 };
 
+```
+
+### Наложение текстур на фигуру
+```glsl
+in vec2 TexCoord0;
+ 
+out vec4 FragColor;
+ 
+uniform sampler2D gSampler;
+ 
+void main()
+{
+    FragColor = texture2D(gSampler, TexCoord0.st);
+};
+```
+
+### Рефакторинг кода на модули
+
+### Различные виды освещения
+
+```glsl
+// Версия шейдера 3.3
+#version 330
+
+const int MAX_POINT_LIGHTS = 3;
+const int MAX_SPOT_LIGHTS = 3;
+
+in vec2 TexCoord0;
+in vec3 WorldPos0;
+in vec3 Normal0;
+
+out vec4 FragColor;
+
+// Основа для всех видов
+struct BaseLight {
+    vec3 Color;
+    float AmbientIntensity;
+    float DiffuseIntensity;
+};
+
+// Направленный свет
+struct DirectionalLight {
+    BaseLight Base;
+    vec3 Direction;
+};
+
+// Параметры затухания
+struct Attenuation {
+    float Constant;
+    float Linear;
+    float Exp;
+};
+
+// Точечный свет
+struct PointLight {
+    BaseLight Base;
+    vec3 Position;
+    Attenuation Attenuation;
+};
+
+// Прожектор
+struct SpotLight {
+    PointLight Base;
+    vec3 Direction;
+    float Cutoff;
+};
+
+uniform DirectionalLight gDirectionalLight;
+
+uniform int gNumPointLights;
+uniform PointLight gPointLights[MAX_POINT_LIGHTS];
+
+uniform int gNumSpotLights;
+uniform SpotLight gSpotLights[MAX_SPOT_LIGHTS];
+
+uniform sampler2D gSampler;
+
+uniform vec3 gEyeWorldPos;
+uniform float gMatSpecularIntensity;
+uniform float gMatSpecularPower;
+
+// Общая функция вычисления света
+vec4 calcLightInternal(BaseLight Light, vec3 LightDirection, vec3 Normal) {
+    vec4 AmbientColor = vec4(Light.Color, 1.0f) * Light.AmbientIntensity;
+    float DiffuseFactor = dot(Normal, -LightDirection);
+
+    vec4 DiffuseColor = vec4(0, 0, 0, 0);
+    vec4 SpecularColor = vec4(0, 0, 0, 0);
+
+    if (DiffuseFactor > 0) {
+        DiffuseColor = vec4(Light.Color, 1.0f) *
+        Light.DiffuseIntensity * DiffuseFactor;
+
+        vec3 VertexToEye = normalize(gEyeWorldPos - WorldPos0);
+        vec3 LightReflect = normalize(reflect(LightDirection, Normal));
+        float SpecularFactor = dot(VertexToEye, LightReflect);
+        SpecularFactor = pow(SpecularFactor, gMatSpecularPower);
+        if (SpecularFactor > 0) {
+            SpecularColor = vec4(Light.Color, 1.0f)
+            * gMatSpecularIntensity * SpecularFactor;
+        }
+    }
+
+    return (AmbientColor + DiffuseColor + SpecularColor);
+}
+
+// Функция вычисления направленного света
+vec4 calcDirectionalLight(vec3 Normal) {
+    return calcLightInternal(gDirectionalLight.Base, gDirectionalLight.Direction, Normal);
+}
+
+// Функция вычисления точечного света
+vec4 calcPointLight(PointLight l, vec3 Normal) {
+    vec3 LightDirection = WorldPos0 - l.Position;
+    float Distance = length(LightDirection);
+    LightDirection = normalize(LightDirection);
+
+    vec4 Color = calcLightInternal(l.Base, LightDirection, Normal);
+    float Attenuation = l.Attenuation.Constant +
+                        l.Attenuation.Linear * Distance +
+                        l.Attenuation.Exp * Distance * Distance;
+
+    return Color / Attenuation;
+}
+
+// Функция вычисления прожектора
+vec4 calcSpotLight(SpotLight l, vec3 Normal) {
+    vec3 LightToPixel = normalize(WorldPos0 - l.Base.Position);
+    float SpotFactor = dot(LightToPixel, l.Direction);
+
+    if (SpotFactor > l.Cutoff) {
+        vec4 Color = calcPointLight(l.Base, Normal);
+        return Color * (1.0 - (1.0 - SpotFactor) * 1.0/(1.0 - l.Cutoff));
+    } else {
+        return vec4(0, 0, 0, 0);
+    }
+}
+
+void main() {
+    vec3 Normal = normalize(Normal0);
+    vec4 TotalLight = calcDirectionalLight(Normal);
+
+    for (int i = 0; i < gNumPointLights; i++) {
+        TotalLight += calcPointLight(gPointLights[i], Normal);
+    }
+
+    for (int i = 0; i < gNumSpotLights; i++) {
+        TotalLight += calcSpotLight(gSpotLights[i], Normal);
+    }
+
+    FragColor = texture2D(gSampler, TexCoord0.xy) * TotalLight;
+}
 ```

@@ -1,7 +1,7 @@
 #include "GLUTBackend.h"
 
-#include <GL/freeglut.h>
 #include <GL/glew.h>
+#include <GL/freeglut.h>
 
 #include <boost/format.hpp>
 #include <iostream>

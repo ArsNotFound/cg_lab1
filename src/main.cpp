@@ -1,5 +1,5 @@
-#include <GL/freeglut.h>
 #include <GL/glew.h>
+#include <GL/freeglut.h>
 
 #include <glm/gtx/string_cast.hpp>
 #include <iostream>
@@ -67,26 +67,26 @@ class Main : public ICallbacks {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         mScale += 0.1f;
-        //
-        //        std::vector<PointLight> pl(3);
-        //        pl[0].diffuseIntensity = 0.5f;
-        //        pl[0].color = glm::vec3(1.0f, 0.0f, 0.0f);
-        //        pl[0].position = glm::vec3(sinf(mScale) * 10, 1.0f,
-        //        cosf(mScale) * 10); pl[0].attenuation.linear = 0.1f;
-        //
-        //        pl[1].diffuseIntensity = 0.5f;
-        //        pl[1].color = glm::vec3(0.0f, 1.0f, 0.0f);
-        //        pl[1].position = glm::vec3(sinf(mScale + 2.1f) * 10, 1.0f,
-        //        cosf(mScale + 2.1f) * 10); pl[1].attenuation.linear =
-        //        0.1f;
-        //
-        //        pl[2].diffuseIntensity = 0.5f;
-        //        pl[2].color = glm::vec3(0.0f, 0.0f, 1.0f);
-        //        pl[2].position = glm::vec3(sinf(mScale + 4.2f) * 10, 1.0f,
-        //        cosf(mScale + 4.2f) * 10); pl[2].attenuation.linear =
-        //        0.1f;
-        //
-        //        mEffect->setPointLights(pl);
+
+        std::vector<PointLight> pl(3);
+        pl[0].diffuseIntensity = 0.5f;
+        pl[0].color = glm::vec3(1.0f, 0.0f, 0.0f);
+        pl[0].position = glm::vec3(sinf(mScale) * 10, 1.0f, cosf(mScale) * 10);
+        pl[0].attenuation.linear = 0.1f;
+
+        pl[1].diffuseIntensity = 0.5f;
+        pl[1].color = glm::vec3(0.0f, 1.0f, 0.0f);
+        pl[1].position =
+            glm::vec3(sinf(mScale + 2.1f) * 10, 1.0f, cosf(mScale + 2.1f) * 10);
+        pl[1].attenuation.linear = 0.1f;
+
+        pl[2].diffuseIntensity = 0.5f;
+        pl[2].color = glm::vec3(0.0f, 0.0f, 1.0f);
+        pl[2].position =
+            glm::vec3(sinf(mScale + 4.2f) * 10, 1.0f, cosf(mScale + 4.2f) * 10);
+        pl[2].attenuation.linear = 0.1f;
+
+        mEffect->setPointLights(pl);
 
         std::vector<SpotLight> sl(2);
 
