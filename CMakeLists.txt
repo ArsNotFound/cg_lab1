@@ -11,7 +11,7 @@ find_package(ImageMagick COMPONENTS Magick++)
 find_package(Boost)
 find_package(assimp)
 
-file(GLOB SOURCES src/*.cpp src/*.h)
+file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 
 add_executable(cg_lab1 ${SOURCES})
 

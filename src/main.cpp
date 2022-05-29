@@ -4,14 +4,14 @@
 
 #include <memory>
 
-#include "Camera.h"
-#include "GLUTBackend.h"
-#include "ICallbacks.h"
-#include "LightingTechnique.h"
-#include "Mesh.h"
-#include "Pipeline.h"
-#include "ShadowMapFBO.h"
-#include "ShadowMapTechnique.h"
+#include "camera/Camera.h"
+#include "fbo/ShadowMapFBO.h"
+#include "glut_backend/GLUTBackend.h"
+#include "glut_backend/ICallbacks.h"
+#include "mesh/Mesh.h"
+#include "technique/LightingTechnique.h"
+#include "technique/ShadowMapTechnique.h"
+#include "utils/Pipeline.h"
 
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720

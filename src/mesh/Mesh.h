@@ -12,8 +12,8 @@
 #include <assimp/scene.h>
 #include <glm/glm.hpp>
 
+#include "../utils/utils.h"
 #include "Texture.h"
-#include "utils.h"
 
 #define VERTEX_POS_OFFSET 0
 #define VERTEX_TEX_OFFSET (VERTEX_POS_OFFSET + sizeof(glm::vec3))

@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "utils.h"
+#include "../utils/utils.h"
 
 Technique::Technique() : mShaderProg(0) {}
 

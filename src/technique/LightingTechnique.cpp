@@ -5,7 +5,7 @@
 #include <boost/format.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "utils.h"
+#include "../utils/utils.h"
 
 LightingTechnique::LightingTechnique(std::string vertexShaderFilename,
                                      std::string fragmentShaderFilename)
