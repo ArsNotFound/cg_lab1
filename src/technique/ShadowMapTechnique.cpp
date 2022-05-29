@@ -4,19 +4,18 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
-ShadowMapTechnique::ShadowMapTechnique(std::string vertexShaderFilename,
-                                       std::string fragmentShaderFilename)
+ShadowMapTechnique::ShadowMapTechnique(
+    std::string vertexShaderFilename, std::string fragmentShaderFilename
+)
     : mVertexShaderFilename(std::move(vertexShaderFilename)),
       mFragmentShaderFilename(std::move(fragmentShaderFilename)) {}
 
 bool ShadowMapTechnique::init() {
     if (!Technique::init()) return false;
 
-    if (!addShaderFromFile(GL_VERTEX_SHADER, mVertexShaderFilename))
-        return false;
+    if (!addShaderFromFile(GL_VERTEX_SHADER, mVertexShaderFilename)) return false;
 
-    if (!addShaderFromFile(GL_FRAGMENT_SHADER, mFragmentShaderFilename))
-        return false;
+    if (!addShaderFromFile(GL_FRAGMENT_SHADER, mFragmentShaderFilename)) return false;
 
     if (!finalize()) return false;
 

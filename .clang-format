@@ -3,6 +3,11 @@ BasedOnStyle: Google
 IndentWidth: 4
 IndentAccessModifiers: true
 AccessModifierOffset: -4
+ColumnLimit: 90
+AlignAfterOpenBracket: BlockIndent
+BinPackArguments: false
+BinPackParameters: false
+PackConstructorInitializers: Never
 
 SortIncludes: CaseSensitive
 IncludeBlocks: Regroup

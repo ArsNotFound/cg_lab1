@@ -7,8 +7,13 @@ class Camera {
     public:
         Camera(int windowWidth, int windowHeight);
 
-        Camera(int windowWidth, int windowHeight, const glm::vec3 &pos,
-               const glm::vec3 &target, const glm::vec3 &up);
+        Camera(
+            int windowWidth,
+            int windowHeight,
+            const glm::vec3 &pos,
+            const glm::vec3 &target,
+            const glm::vec3 &up
+        );
 
         const glm::vec3 &getPos() const { return mPos; }
 

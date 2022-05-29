@@ -20,12 +20,15 @@ const glm::mat4 &Pipeline::getWorldTransformation() {
 }
 
 const glm::mat4 &Pipeline::getWVPTransformation() {
-    glm::mat4 persProjTrans =
-        glm::perspectiveFov(glm::radians(mPersProj.FOV), mPersProj.width,
-                            mPersProj.height, mPersProj.zNear, mPersProj.zFar);
+    glm::mat4 persProjTrans = glm::perspectiveFov(
+        glm::radians(mPersProj.FOV),
+        mPersProj.width,
+        mPersProj.height,
+        mPersProj.zNear,
+        mPersProj.zFar
+    );
 
-    glm::mat4 cameraTrans =
-        glm::lookAt(mCamera.pos, mCamera.target, mCamera.up);
+    glm::mat4 cameraTrans = glm::lookAt(mCamera.pos, mCamera.target, mCamera.up);
 
     mWVPTransformation = persProjTrans * cameraTrans * getWorldTransformation();
     return mWVPTransformation;

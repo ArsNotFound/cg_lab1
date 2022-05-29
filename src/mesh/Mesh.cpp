@@ -15,8 +15,9 @@ Mesh::MeshEntry::~MeshEntry() {
     if (VA == INVALID_OGL_VALUE) glDeleteVertexArrays(1, &VA);
 }
 
-bool Mesh::MeshEntry::init(const std::vector<Vertex> &vertices,
-                           const std::vector<unsigned int> &indices) {
+bool Mesh::MeshEntry::init(
+    const std::vector<Vertex> &vertices, const std::vector<unsigned int> &indices
+) {
     numIndices = indices.size();
 
     glGenVertexArrays(1, &VA);
@@ -34,13 +35,30 @@ bool Mesh::MeshEntry::init(const std::vector<Vertex> &vertices,
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                          reinterpret_cast<const GLvoid *>(VERTEX_POS_OFFSET));
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                          reinterpret_cast<const GLvoid *>(VERTEX_TEX_OFFSET));
     glVertexAttribPointer(
-        2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-        reinterpret_cast<const GLvoid *>(VERTEX_NORMAL_OFFSET));
+        0,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(Vertex),
+        reinterpret_cast<const GLvoid *>(VERTEX_POS_OFFSET)
+    );
+    glVertexAttribPointer(
+        1,
+        2,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(Vertex),
+        reinterpret_cast<const GLvoid *>(VERTEX_TEX_OFFSET)
+    );
+    glVertexAttribPointer(
+        2,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(Vertex),
+        reinterpret_cast<const GLvoid *>(VERTEX_NORMAL_OFFSET)
+    );
 
     glBindVertexArray(0);
 
@@ -60,14 +78,15 @@ bool Mesh::loadMesh(const std::string &filename) {
 
     const aiScene *scene = importer.ReadFile(
         filename.c_str(),
-        aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs);
+        aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs
+    );
 
     if (scene) {
         return initFromScene(scene, filename);
     }
 
-    std::cerr << "Error parsing '" << filename << "': '"
-              << importer.GetErrorString() << "'" << std::endl;
+    std::cerr << "Error parsing '" << filename << "': '" << importer.GetErrorString()
+              << "'" << std::endl;
     return false;
 }
 
@@ -96,9 +115,11 @@ void Mesh::initMesh(unsigned int index, const aiMesh *mesh) {
         const aiVector3D *texCoord =
             mesh->HasTextureCoords(0) ? &(mesh->mTextureCoords[0][i]) : &Zero3D;
 
-        Vertex v(glm::vec3(pos->x, pos->y, pos->z),
-                 glm::vec2(texCoord->x, texCoord->y),
-                 glm::vec3(normal->x, normal->y, normal->z));
+        Vertex v(
+            glm::vec3(pos->x, pos->y, pos->z),
+            glm::vec2(texCoord->x, texCoord->y),
+            glm::vec3(normal->x, normal->y, normal->z)
+        );
         vertices.push_back(v);
     }
 
@@ -134,11 +155,9 @@ bool Mesh::initMaterials(const aiScene *scene, const std::string &filename) {
         if (material->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
             aiString path;
 
-            if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) ==
-                AI_SUCCESS) {
+            if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) == AI_SUCCESS) {
                 std::string fullPath = dir + "/" + path.data;
-                mTextures[i] =
-                    std::make_shared<Texture>(GL_TEXTURE_2D, fullPath);
+                mTextures[i] = std::make_shared<Texture>(GL_TEXTURE_2D, fullPath);
 
                 if (!mTextures[i]->load()) {
                     std::cerr << "Error loading texture '" << fullPath << "'"
@@ -149,11 +168,11 @@ bool Mesh::initMaterials(const aiScene *scene, const std::string &filename) {
             }
         }
 
-        if (!mTextures[i]) {
-            mTextures[i] =
-                std::make_shared<Texture>(GL_TEXTURE_2D, "./content/white.png");
-            ret = mTextures[i]->load();
-        }
+//        if (!mTextures[i]) {
+//            mTextures[i] =
+//                std::make_shared<Texture>(GL_TEXTURE_2D, "./content/white.png");
+//            ret = mTextures[i]->load();
+//        }
     }
 
     return ret;
@@ -169,7 +188,8 @@ void Mesh::render() {
         if (materialIndex < mTextures.size() && mTextures[materialIndex])
             mTextures[materialIndex]->bind(GL_TEXTURE0);
 
-        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(entry.numIndices),
-                       GL_UNSIGNED_INT, nullptr);
+        glDrawElements(
+            GL_TRIANGLES, static_cast<GLsizei>(entry.numIndices), GL_UNSIGNED_INT, nullptr
+        );
     }
 }

@@ -9,8 +9,9 @@
 namespace GLUTBackend {
 extern void init(int argc, char **argv);
 
-extern bool createWindow(unsigned int width, unsigned int height,
-                         bool isFullscreen, const std::string &title);
+extern bool createWindow(
+    unsigned int width, unsigned int height, bool isFullscreen, const std::string &title
+);
 
 extern void run(const std::shared_ptr<ICallbacks> &callbacks);
 };  // namespace GLUTBackend

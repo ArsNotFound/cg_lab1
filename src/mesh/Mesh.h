@@ -27,11 +27,14 @@ struct Vertex {
         Vertex() = default;
 
         Vertex(const glm::vec3& mPos, const glm::vec2& mTex)
-            : mPos(mPos), mTex(mTex), mNormal(glm::vec3(0.0f, 0.0f, 0.0f)) {}
+            : mPos(mPos),
+              mTex(mTex),
+              mNormal(glm::vec3(0.0f, 0.0f, 0.0f)) {}
 
-        Vertex(const glm::vec3& mPos, const glm::vec2& mTex,
-               const glm::vec3& mNormal)
-            : mPos(mPos), mTex(mTex), mNormal(mNormal) {}
+        Vertex(const glm::vec3& mPos, const glm::vec2& mTex, const glm::vec3& mNormal)
+            : mPos(mPos),
+              mTex(mTex),
+              mNormal(mNormal) {}
 };
 
 class Mesh {
@@ -57,8 +60,10 @@ class Mesh {
 
                 ~MeshEntry();
 
-                bool init(const std::vector<Vertex>& vertices,
-                          const std::vector<unsigned int>& indices);
+                bool init(
+                    const std::vector<Vertex>& vertices,
+                    const std::vector<unsigned int>& indices
+                );
 
                 GLuint VA;
                 GLuint VB;

@@ -14,9 +14,7 @@ void specialKeyboardCB(int key, int x, int y) {
     sCallbacks->specialKeyboardCB(key, x, y);
 }
 
-void keyboardCB(unsigned char key, int x, int y) {
-    sCallbacks->keyboardCB(key, x, y);
-}
+void keyboardCB(unsigned char key, int x, int y) { sCallbacks->keyboardCB(key, x, y); }
 
 void passiveMouseCB(int x, int y) { sCallbacks->passiveMouseCB(x, y); }
 
@@ -35,15 +33,14 @@ void initCallbacks() {
 void GLUTBackend::init(int argc, char **argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
-    glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE,
-                  GLUT_ACTION_GLUTMAINLOOP_RETURNS);
+    glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 }
 
-bool GLUTBackend::createWindow(unsigned int width, unsigned int height,
-                               bool isFullscreen, const std::string &title) {
+bool GLUTBackend::createWindow(
+    unsigned int width, unsigned int height, bool isFullscreen, const std::string &title
+) {
     if (isFullscreen) {
-        std::string modeString =
-            (boost::format("%1%x%2%") % width % height).str();
+        std::string modeString = (boost::format("%1%x%2%") % width % height).str();
         glutGameModeString(modeString.c_str());
         glutEnterGameMode();
     } else {
@@ -53,8 +50,7 @@ bool GLUTBackend::createWindow(unsigned int width, unsigned int height,
 
     GLenum res = glewInit();
     if (res != GLEW_OK) {
-        std::cerr << "Error glew init: '" << glewGetErrorString(res) << "'"
-                  << std::endl;
+        std::cerr << "Error glew init: '" << glewGetErrorString(res) << "'" << std::endl;
         return false;
     }
 

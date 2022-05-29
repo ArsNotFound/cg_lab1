@@ -37,8 +37,9 @@ class Pipeline {
             mRotation[2] = rotateZ;
         }
 
-        void setPerspectiveProj(float FOV, float width, float height,
-                                float zNear, float zFar) {
+        void setPerspectiveProj(
+            float FOV, float width, float height, float zNear, float zFar
+        ) {
             mPersProj.FOV = FOV;
             mPersProj.width = width;
             mPersProj.height = height;
@@ -46,8 +47,9 @@ class Pipeline {
             mPersProj.zFar = zFar;
         }
 
-        void setCamera(const glm::vec3 &pos, const glm::vec3 &target,
-                       const glm::vec3 &up) {
+        void setCamera(
+            const glm::vec3 &pos, const glm::vec3 &target, const glm::vec3 &up
+        ) {
             mCamera.pos = pos;
             mCamera.target = target;
             mCamera.up = up;
@@ -67,7 +69,7 @@ class Pipeline {
                 float width;   // Ширина экрана
                 float height;  // Высота экрана
                 float zNear;   // Ближайшая глубина зрения
-                float zFar;  // Дальнейшая глубина зрения
+                float zFar;    // Дальнейшая глубина зрения
         } mPersProj;
 
         struct {

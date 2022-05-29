@@ -4,7 +4,8 @@
 
 #include "../utils/utils.h"
 
-Technique::Technique() : mShaderProg(0) {}
+Technique::Technique()
+    : mShaderProg(0) {}
 
 Technique::~Technique() {
     for (auto obj : mShaderObjList) glDeleteShader(obj);
@@ -57,8 +58,8 @@ bool Technique::addShader(GLenum shaderType, const std::string &shaderText) {
     if (!success) {
         GLchar infoLog[1024];
         glGetShaderInfoLog(shaderObj, sizeof(infoLog), nullptr, infoLog);
-        std::cerr << "Error compiling shader type " << shaderType << ": '"
-                  << infoLog << "'" << std::endl;
+        std::cerr << "Error compiling shader type " << shaderType << ": '" << infoLog
+                  << "'" << std::endl;
         return false;
     }
 
@@ -68,8 +69,7 @@ bool Technique::addShader(GLenum shaderType, const std::string &shaderText) {
     return true;
 }
 
-bool Technique::addShaderFromFile(GLenum shaderType,
-                                  const std::string &filepath) {
+bool Technique::addShaderFromFile(GLenum shaderType, const std::string &filepath) {
     std::string code = readFile(filepath);
     return addShader(shaderType, code);
 }
@@ -84,8 +84,7 @@ bool Technique::finalize() {
     glGetProgramiv(mShaderProg, GL_LINK_STATUS, &success);
     if (success == 0) {
         glGetProgramInfoLog(mShaderProg, sizeof(errorLog), nullptr, errorLog);
-        std::cerr << "Error linking shader program: '" << errorLog << "'"
-                  << std::endl;
+        std::cerr << "Error linking shader program: '" << errorLog << "'" << std::endl;
         return false;
     }
 
@@ -95,8 +94,7 @@ bool Technique::finalize() {
     glGetProgramiv(mShaderProg, GL_VALIDATE_STATUS, &success);
     if (success == 0) {
         glGetProgramInfoLog(mShaderProg, sizeof(errorLog), nullptr, errorLog);
-        std::cerr << "Invalid shader program: '" << errorLog << "'"
-                  << std::endl;
+        std::cerr << "Invalid shader program: '" << errorLog << "'" << std::endl;
         return false;
     }
 
@@ -109,8 +107,8 @@ GLint Technique::getUniformLocation(const std::string &uniformName) const {
     GLint location = glGetUniformLocation(mShaderProg, uniformName.c_str());
 
     if (location == 0xFFFFFFFF) {
-        std::cerr << "Warning! Unable to get the location of uniform '"
-                  << uniformName << "'" << std::endl;
+        std::cerr << "Warning! Unable to get the location of uniform '" << uniformName
+                  << "'" << std::endl;
     }
 
     return location;

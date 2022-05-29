@@ -12,8 +12,7 @@
 std::string readFile(const std::string &filePath);
 
 template <class T>
-inline void glBufferDataVector(GLenum target, const std::vector<T> &v,
-                               GLenum usage) {
+inline void glBufferDataVector(GLenum target, const std::vector<T> &v, GLenum usage) {
     glBufferData(target, v.size() * sizeof(T), &v.front(), usage);
 }
 

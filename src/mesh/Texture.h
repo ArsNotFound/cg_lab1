@@ -17,10 +17,10 @@ class Texture {
         void bind(GLenum textureUnit) const;
 
     private:
-        std::string mFileName; // Имя файла
-        GLenum mTextureTarget; // Куда ставится текстура
-        GLuint mTextureObj;    // Объект текстуры
-        sail::image mImage;
+        std::string mFileName;  // Имя файла
+        GLenum mTextureTarget;  // Куда ставится текстура
+        GLuint mTextureObj;     // Объект текстуры
+        sail::image mImage;     // Изображение
 };
 
 #endif  // CG_LAB1_TEXTURE_H

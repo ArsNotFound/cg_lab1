@@ -6,6 +6,7 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(GCC_COVERAGE_COMPILE_FLAGS "-Wall")
 
 find_package(glm REQUIRED)
+find_package(SailC++ REQUIRED)
 find_package(ImageMagick)
 find_package(ImageMagick COMPONENTS Magick++)
 find_package(Boost)
@@ -26,9 +27,11 @@ target_link_libraries(
         GLEW
         glm
         assimp
+        SAIL::sail-c++
         ${ImageMagick_LIBRARIES}
         ${ImageMagick_Magick++_LIBRARIES}
         ${Boost_LIBRARIES}
+        ${SailC++_LIBRARIES}
         )
 
 include_directories(
@@ -36,7 +39,13 @@ include_directories(
         ${ImageMagick_INCLUDE_DIRS}
         ${ImageMagick_Magick++_INCLUDE_DIRS}
         ${Boost_INCLUDE_DIRS}
+        ${SailC++_INCLUDE_DIRS}
 )
+
+get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+foreach(dir ${dirs})
+    message(STATUS "dir='${dir}'")
+endforeach()
 
 add_compile_options(-Wall)
 

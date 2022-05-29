@@ -15,8 +15,13 @@ Camera::Camera(int windowWidth, int windowHeight)
     init();
 }
 
-Camera::Camera(int windowWidth, int windowHeight, const glm::vec3 &pos,
-               const glm::vec3 &target, const glm::vec3 &up)
+Camera::Camera(
+    int windowWidth,
+    int windowHeight,
+    const glm::vec3 &pos,
+    const glm::vec3 &target,
+    const glm::vec3 &up
+)
     : mWindowWidth(windowWidth),
       mWindowHeight(windowHeight),
       mPos(pos),

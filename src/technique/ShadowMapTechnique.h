@@ -7,8 +7,9 @@
 
 class ShadowMapTechnique : public Technique {
     public:
-        ShadowMapTechnique(std::string vertexShaderFilename,
-                           std::string fragmentShaderFilename);
+        ShadowMapTechnique(
+            std::string vertexShaderFilename, std::string fragmentShaderFilename
+        );
 
         bool init() override;
 

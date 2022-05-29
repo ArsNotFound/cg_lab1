@@ -2,7 +2,9 @@
 
 #include <iostream>
 
-ShadowMapFBO::ShadowMapFBO() : mFBO(0), mShadowMap(0) {}
+ShadowMapFBO::ShadowMapFBO()
+    : mFBO(0),
+      mShadowMap(0) {}
 
 ShadowMapFBO::~ShadowMapFBO() {
     if (mFBO) glDeleteFramebuffers(1, &mFBO);
@@ -17,10 +19,17 @@ bool ShadowMapFBO::init(unsigned int windowWidth, unsigned int windowHeight) {
     // Создаём буфер глубины
     glGenTextures(1, &mShadowMap);
     glBindTexture(GL_TEXTURE_2D, mShadowMap);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
-                 static_cast<GLint>(windowWidth),
-                 static_cast<GLint>(windowHeight), 0, GL_DEPTH_COMPONENT,
-                 GL_FLOAT, nullptr);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_DEPTH_COMPONENT,
+        static_cast<GLint>(windowWidth),
+        static_cast<GLint>(windowHeight),
+        0,
+        GL_DEPTH_COMPONENT,
+        GL_FLOAT,
+        nullptr
+    );
 
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -28,8 +37,9 @@ bool ShadowMapFBO::init(unsigned int windowWidth, unsigned int windowHeight) {
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, mFBO);
-    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                           GL_TEXTURE_2D, mShadowMap, 0);
+    glFramebufferTexture2D(
+        GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, mShadowMap, 0
+    );
 
     glDrawBuffer(GL_NONE);
 

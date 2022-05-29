@@ -34,7 +34,9 @@ struct PointLight : public BaseLight {
                 float exp;
         } attenuation;
 
-        PointLight() : BaseLight(), position(glm::vec3(0.0f)) {
+        PointLight()
+            : BaseLight(),
+              position(glm::vec3(0.0f)) {
             attenuation.constant = 1.0f;
             attenuation.linear = 0.0f;
             attenuation.exp = 0.0f;
@@ -45,13 +47,16 @@ struct SpotLight : public PointLight {
         glm::vec3 direction;
         float cutoff;
 
-        SpotLight() : direction(glm::vec3(0.0f)), cutoff(0.0f) {}
+        SpotLight()
+            : direction(glm::vec3(0.0f)),
+              cutoff(0.0f) {}
 };
 
 class LightingTechnique : public Technique {
     public:
-        LightingTechnique(std::string vertexShaderFilename,
-                          std::string fragmentShaderFilename);
+        LightingTechnique(
+            std::string vertexShaderFilename, std::string fragmentShaderFilename
+        );
 
         bool init() override;
 
@@ -59,7 +64,7 @@ class LightingTechnique : public Technique {
 
         void setWorldMatrix(const glm::mat4 &worldInverse) const;
 
-        void setTextureUnit(unsigned int textureUnit) const;
+        void setTextureUnit(int textureUnit) const;
 
         void setDirectionalLight(const DirectionLight &light) const;
 
@@ -73,6 +78,10 @@ class LightingTechnique : public Technique {
 
         void setSpotLights(const std::vector<SpotLight> &lights) const;
 
+        void setLightWVP(const glm::mat4 &lightWVP) const;
+
+        void setShadowMapTextureUnit(int textureUnit) const;
+
     private:
         std::string mVertexShaderFilename;
         std::string mFragmentShaderFilename;
@@ -84,6 +93,9 @@ class LightingTechnique : public Technique {
         GLint mEyeWorldPosLocation;
         GLint mMatSpecularIntensityLocation;
         GLint mMatSpecularPowerLocation;
+
+        GLint mLightWVPLocation;
+        GLint mShadowMapLocation;
 
         struct sBaseLight {
                 GLint color;
