@@ -7,21 +7,21 @@ Texture::Texture(GLenum textureTarget, std::string fileName)
     : mTextureTarget(textureTarget), mFileName(std::move(fileName)) {}
 
 bool Texture::load() {
-    try {
-        mPImage = new Magick::Image(mFileName);
-        mPImage->write(&mBlob, "RGBA");
-    } catch (Magick::Error &error) {
+    mImage = sail::image_input::load(mFileName);
+
+    if (!mImage.is_valid()) {
         std::cerr << "Error loading texture '" << mFileName
-                  << "': " << error.what() << std::endl;
+                  << "'" << std::endl;
         return false;
     }
 
+    SAIL_TRY(mImage.convert(SAIL_PIXEL_FORMAT_BPP24_RGB));
+
     glGenTextures(1, &mTextureObj);
     glBindTexture(mTextureTarget, mTextureObj);
-    glTexImage2D(
-        mTextureTarget, 0, GL_RGB, static_cast<GLsizei>(mPImage->columns()),
-        static_cast<GLsizei>(mPImage->rows()), static_cast<GLint>(-0.5),
-        GL_RGBA, GL_UNSIGNED_BYTE, mBlob.data());
+    glTexImage2D(mTextureTarget, 0, GL_RGB, static_cast<GLsizei>(mImage.width()),
+                 static_cast<GLsizei>(mImage.height()), static_cast<GLint>(-0.5),
+                 GL_RGBA, GL_UNSIGNED_BYTE, mImage.pixels());
     glTexParameterf(mTextureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(mTextureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
