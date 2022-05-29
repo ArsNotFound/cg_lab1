@@ -3,6 +3,7 @@ project(cg_lab1)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_VERBOSE_MAKEFILE ON)
+set(GCC_COVERAGE_COMPILE_FLAGS "-Wall")
 
 find_package(glm REQUIRED)
 find_package(ImageMagick)

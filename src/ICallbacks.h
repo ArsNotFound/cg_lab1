@@ -8,6 +8,7 @@ class ICallbacks {
     virtual void passiveMouseCB(int x, int y) = 0;
     virtual void renderSceneCB() = 0;
     virtual void idleCB() = 0;
+    virtual ~ICallbacks() {};
 };
 
 #endif  // CG_LAB1_ICALLBACKS_H

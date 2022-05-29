@@ -10,6 +10,8 @@
 #include "LightingTechnique.h"
 #include "Mesh.h"
 #include "Pipeline.h"
+#include "ShadowMapFBO.h"
+#include "ShadowMapTechnique.h"
 
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
@@ -17,13 +19,16 @@
 class Main : public ICallbacks {
     public:
     Main() : mScale(0.0f) {
-        mDirectionalLight.color = glm::vec3(1.0f, 1.0f, 1.0f);
-        mDirectionalLight.ambientIntensity = 1.0f;
-        mDirectionalLight.direction = glm::vec3(1.0f, 0.0f, 1.0f);
-        mDirectionalLight.diffuseIntensity = 0.01f;
+        mSpotLight.ambientIntensity = 0.0f;
+        mSpotLight.diffuseIntensity = 0.9f;
+        mSpotLight.color = glm::vec3(1.0f, 1.0f, 1.0f);
+        mSpotLight.attenuation.linear = 0.01f;
+        mSpotLight.position = glm::vec3(-20.0, 20.0, 5.0f);
+        mSpotLight.direction = glm::vec3(1.0f, -1.0f, 0.0f);
+        mSpotLight.cutoff = 20.0f;
     }
 
-    ~Main() = default;
+    ~Main() override = default;
 
     bool init() {
         glm::vec3 pos(-10.0f, 40.0f, 0.0f);
@@ -34,10 +39,27 @@ class Main : public ICallbacks {
 
         mEffect = std::make_unique<LightingTechnique>(
             "./shaders/light_vertex.glsl", "./shaders/light_fragment.glsl");
-        if (!mEffect->init()) return false;
+        if (!mEffect->init()) {
+            std::cerr << "Error initializing the lighting technique"
+                      << std::endl;
+            return false;
+        }
 
-        mEffect->enable();
-        mEffect->setTextureUnit(0);
+        mShadowMapTech = std::make_unique<ShadowMapTechnique>(
+            "./shaders/shadow_vertex.glsl", "./shaders/shadow_fragment.glsl");
+        if (!mShadowMapTech->init()) {
+            std::cerr << "Error initializing the shadow map technique"
+                      << std::endl;
+            return false;
+        }
+
+        mShadowMapTech->enable();
+
+        mQuad = std::make_unique<Mesh>();
+
+        if (!mQuad->loadMesh("./content/quad.obj")) {
+            return false;
+        }
 
         mMesh = std::make_unique<Mesh>();
 
@@ -46,30 +68,46 @@ class Main : public ICallbacks {
 
     void renderSceneCB() override {
         mGameCamera->onRender();
+        mScale += 0.05f;
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        ShadowMapPass();
+        RenderPass();
 
-        mScale += 0.01f;
+        glutSwapBuffers();
+    }
+
+    virtual void ShadowMapPass() {
+        mShadowMapFBO.bindForWriting();
+
+        glClear(GL_DEPTH_BUFFER_BIT);
 
         Pipeline p;
-        p.setScale(0.1f, 0.1f, 0.1f);
-        p.setRotation(0.0f, mScale, 0.0f);
+        p.setScale(0.2f, 0.2f, 0.2f);
+        p.setRotation(0.1f, mScale, 0.1f);
+        p.setWorldPos(0.0f, 0.0f, 5.0f);
+        p.setCamera(mSpotLight.position, mSpotLight.direction,
+                    glm::vec3(0.0f, 1.0f, 0.0f));
+        p.setPerspectiveProj(60.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 50.0f);
+        mShadowMapTech->setWVP(p.getWVPTransformation());
+        mMesh->render();
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    virtual void RenderPass() {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        mShadowMapTech->setTextureUnit(0);
+        mShadowMapFBO.bindForReading(GL_TEXTURE0);
+
+        Pipeline p;
+        p.setScale(5.0f, 5.0f, 5.0f);
         p.setWorldPos(0.0f, 0.0f, 10.0f);
         p.setCamera(mGameCamera->getPos(), mGameCamera->getTarget(),
                     mGameCamera->getUp());
-        p.setPerspectiveProj(60.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 100.0f);
-
-        mEffect->setWVP(p.getWVPTransformation());
-        mEffect->setWorldMatrix(p.getWorldTransformation());
-        mEffect->setDirectionalLight(mDirectionalLight);
-
-        mEffect->setEyeWorldPos(mGameCamera->getPos());
-        mEffect->setMatSpecularIntensity(0.0f);
-        mEffect->setMatSpecularPower(0.0f);
-
-        mMesh->render();
-
-        glutSwapBuffers();
+        p.setPerspectiveProj(60.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 50.0f);
+        mShadowMapTech->setWVP(p.getWVPTransformation());
+        mQuad->render();
     }
 
     void idleCB() override { renderSceneCB(); }
@@ -83,19 +121,6 @@ class Main : public ICallbacks {
             case 'q':
                 glutLeaveMainLoop();
                 break;
-            case 'a':
-                mDirectionalLight.ambientIntensity += 0.05f;
-                break;
-            case 's':
-                mDirectionalLight.ambientIntensity -= 0.05f;
-                break;
-            case 'z':
-                mDirectionalLight.diffuseIntensity += 0.05f;
-                break;
-
-            case 'x':
-                mDirectionalLight.diffuseIntensity -= 0.05f;
-                break;
             default:
                 break;
         }
@@ -104,13 +129,17 @@ class Main : public ICallbacks {
     void passiveMouseCB(int x, int y) override { mGameCamera->onMouse(x, y); }
 
     private:
-    std::unique_ptr<Mesh> mMesh;
-    std::unique_ptr<Camera> mGameCamera;
-
     float mScale;
 
+    std::unique_ptr<Mesh> mMesh;
+    std::unique_ptr<Mesh> mQuad;
+
     std::unique_ptr<LightingTechnique> mEffect;
-    DirectionLight mDirectionalLight;
+    std::unique_ptr<ShadowMapTechnique> mShadowMapTech;
+    std::unique_ptr<Camera> mGameCamera;
+
+    ShadowMapFBO mShadowMapFBO;
+    SpotLight mSpotLight;
 };
 
 int main(int argc, char **argv) {

@@ -3,6 +3,7 @@
 
 #include <GL/glew.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -67,7 +68,7 @@ class Mesh {
     };
 
     std::vector<MeshEntry> mEntries;
-    std::vector<Texture*> mTextures;
+    std::vector<std::shared_ptr<Texture>> mTextures;
 };
 
 #endif  // CG_LAB1_MESH_H

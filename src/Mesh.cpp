@@ -43,15 +43,15 @@ bool Mesh::MeshEntry::init(const std::vector<Vertex> &vertices,
         reinterpret_cast<const GLvoid *>(VERTEX_NORMAL_OFFSET));
 
     glBindVertexArray(0);
+
+    return true;
 }
 
 Mesh::Mesh() = default;
 
 Mesh::~Mesh() { clear(); }
 
-void Mesh::clear() {
-    for (auto p : mTextures) delete p;
-}
+void Mesh::clear() {}
 
 bool Mesh::loadMesh(const std::string &filename) {
     clear();
@@ -137,12 +137,12 @@ bool Mesh::initMaterials(const aiScene *scene, const std::string &filename) {
             if (material->GetTexture(aiTextureType_DIFFUSE, 0, &path) ==
                 AI_SUCCESS) {
                 std::string fullPath = dir + "/" + path.data;
-                mTextures[i] = new Texture(GL_TEXTURE_2D, fullPath);
+                mTextures[i] =
+                    std::make_shared<Texture>(GL_TEXTURE_2D, fullPath);
 
                 if (!mTextures[i]->load()) {
                     std::cerr << "Error loading texture '" << fullPath << "'"
                               << std::endl;
-                    delete mTextures[i];
                     mTextures[i] = nullptr;
                     ret = false;
                 }
@@ -150,7 +150,8 @@ bool Mesh::initMaterials(const aiScene *scene, const std::string &filename) {
         }
 
         if (!mTextures[i]) {
-            mTextures[i] = new Texture(GL_TEXTURE_2D, "./content/white.png");
+            mTextures[i] =
+                std::make_shared<Texture>(GL_TEXTURE_2D, "./content/white.png");
             ret = mTextures[i]->load();
         }
     }
