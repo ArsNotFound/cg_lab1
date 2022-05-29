@@ -1,8 +1,8 @@
 Language: Cpp
 BasedOnStyle: Google
 IndentWidth: 4
-IndentAccessModifiers: false
-AccessModifierOffset: 0
+IndentAccessModifiers: true
+AccessModifierOffset: -4
 
 SortIncludes: CaseSensitive
 IncludeBlocks: Regroup

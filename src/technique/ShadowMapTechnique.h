@@ -7,21 +7,21 @@
 
 class ShadowMapTechnique : public Technique {
     public:
-    ShadowMapTechnique(std::string vertexShaderFilename,
-                       std::string fragmentShaderFilename);
+        ShadowMapTechnique(std::string vertexShaderFilename,
+                           std::string fragmentShaderFilename);
 
-    bool init() override;
+        bool init() override;
 
-    void setWVP(const glm::mat4& wvp) const;
+        void setWVP(const glm::mat4& wvp) const;
 
-    void setTextureUnit(unsigned int textureUnit) const;
+        void setTextureUnit(unsigned int textureUnit) const;
 
     private:
-    std::string mVertexShaderFilename;
-    std::string mFragmentShaderFilename;
+        std::string mVertexShaderFilename;
+        std::string mFragmentShaderFilename;
 
-    GLint mWVPLocation;
-    GLint mTextureLocation;
+        GLint mWVPLocation;
+        GLint mTextureLocation;
 };
 
 #endif  // CG_LAB1_SHADOWMAPTECHNIQUE_H

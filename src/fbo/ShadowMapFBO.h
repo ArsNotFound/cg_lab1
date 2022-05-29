@@ -5,19 +5,19 @@
 
 class ShadowMapFBO {
     public:
-    ShadowMapFBO();
+        ShadowMapFBO();
 
-    ~ShadowMapFBO();
+        ~ShadowMapFBO();
 
-    bool init(unsigned int windowWidth, unsigned int windowHeight);
+        bool init(unsigned int windowWidth, unsigned int windowHeight);
 
-    void bindForWriting() const;
+        void bindForWriting() const;
 
-    void bindForReading(GLenum textureUnit) const;
+        void bindForReading(GLenum textureUnit) const;
 
     private:
-    GLuint mFBO;
-    GLuint mShadowMap;
+        GLuint mFBO;
+        GLuint mShadowMap;
 };
 
 #endif  // CG_LAB1_SHADOWMAPFBO_H
