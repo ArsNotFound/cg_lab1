@@ -1,10 +1,9 @@
 #ifndef CG_LAB1_LIGHTINGTECHNIQUE_H
 #define CG_LAB1_LIGHTINGTECHNIQUE_H
 
+#include <vector>
 
 #include <glm/glm.hpp>
-
-#include <vector>
 
 #include "Technique.h"
 
@@ -16,10 +15,10 @@ struct BaseLight {
     float ambientIntensity;
     float diffuseIntensity;
 
-    BaseLight() :
-            color(glm::vec3(0.0f)),
-            ambientIntensity(0.0f),
-            diffuseIntensity(0.0f) {}
+    BaseLight()
+        : color(glm::vec3(0.0f)),
+          ambientIntensity(0.0f),
+          diffuseIntensity(0.0f) {}
 };
 
 struct DirectionLight : public BaseLight {
@@ -35,9 +34,7 @@ struct PointLight : public BaseLight {
         float exp;
     } attenuation;
 
-    PointLight() :
-            BaseLight(),
-            position(glm::vec3(0.0f)) {
+    PointLight() : BaseLight(), position(glm::vec3(0.0f)) {
         attenuation.constant = 1.0f;
         attenuation.linear = 0.0f;
         attenuation.exp = 0.0f;
@@ -48,14 +45,13 @@ struct SpotLight : public PointLight {
     glm::vec3 direction;
     float cutoff;
 
-    SpotLight() :
-            direction(glm::vec3(0.0f)),
-            cutoff(0.0f) {}
+    SpotLight() : direction(glm::vec3(0.0f)), cutoff(0.0f) {}
 };
 
 class LightingTechnique : public Technique {
-public:
-    LightingTechnique(std::string vertexShaderFilename, std::string fragmentShaderFilename);
+    public:
+    LightingTechnique(std::string vertexShaderFilename,
+                      std::string fragmentShaderFilename);
 
     bool init() override;
 
@@ -77,7 +73,7 @@ public:
 
     void setSpotLights(const std::vector<SpotLight> &lights) const;
 
-private:
+    private:
     std::string mVertexShaderFilename;
     std::string mFragmentShaderFilename;
 
@@ -124,5 +120,4 @@ private:
     std::vector<sSpotLight> mSpotLightsLocation;
 };
 
-
-#endif //CG_LAB1_LIGHTINGTECHNIQUE_H
+#endif  // CG_LAB1_LIGHTINGTECHNIQUE_H

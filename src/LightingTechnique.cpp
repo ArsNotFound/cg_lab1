@@ -1,8 +1,9 @@
 #include "LightingTechnique.h"
 
+#include <utility>
+
 #include <boost/format.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <utility>
 
 #include "utils.h"
 
@@ -17,11 +18,11 @@ LightingTechnique::LightingTechnique(std::string vertexShaderFilename,
 bool LightingTechnique::init() {
     if (!Technique::init()) return false;
 
-    std::string vertexShaderCode = readFile(mVertexShaderFilename);
-    if (!addShader(GL_VERTEX_SHADER, vertexShaderCode)) return false;
+    if (!addShaderFromFile(GL_VERTEX_SHADER, mVertexShaderFilename))
+        return false;
 
-    std::string fragmentShaderCode = readFile(mFragmentShaderFilename);
-    if (!addShader(GL_FRAGMENT_SHADER, fragmentShaderCode)) return false;
+    if (!addShaderFromFile(GL_FRAGMENT_SHADER, mFragmentShaderFilename))
+        return false;
 
     if (!finalize()) return false;
 

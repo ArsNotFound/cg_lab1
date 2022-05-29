@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "utils.h"
+
 Technique::Technique() : mShaderProg(0) {}
 
 Technique::~Technique() {
@@ -64,6 +66,12 @@ bool Technique::addShader(GLenum shaderType, const std::string &shaderText) {
     glAttachShader(mShaderProg, shaderObj);
 
     return true;
+}
+
+bool Technique::addShaderFromFile(GLenum shaderType,
+                                  const std::string &filepath) {
+    std::string code = readFile(filepath);
+    return addShader(shaderType, code);
 }
 
 bool Technique::finalize() {

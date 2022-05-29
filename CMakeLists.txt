@@ -8,6 +8,7 @@ find_package(glm REQUIRED)
 find_package(ImageMagick)
 find_package(ImageMagick COMPONENTS Magick++)
 find_package(Boost)
+find_package(assimp)
 
 file(GLOB SOURCES src/*.cpp src/*.h)
 
@@ -23,6 +24,7 @@ target_link_libraries(
         glut
         GLEW
         glm
+        assimp
         ${ImageMagick_LIBRARIES}
         ${ImageMagick_Magick++_LIBRARIES}
         ${Boost_LIBRARIES}

@@ -1,10 +1,12 @@
 #include "GLUTBackend.h"
 
 #include <GL/glew.h>
+
 #include <GL/freeglut.h>
 
-#include <boost/format.hpp>
 #include <iostream>
+
+#include <boost/format.hpp>
 
 std::shared_ptr<ICallbacks> sCallbacks;
 

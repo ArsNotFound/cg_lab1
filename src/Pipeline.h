@@ -2,6 +2,7 @@
 #define CG_LAB1_PIPELINE_H
 
 #include <cmath>
+
 #include <glm/glm.hpp>
 
 // Пайплайн для преобразований

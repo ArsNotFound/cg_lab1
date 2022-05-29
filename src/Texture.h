@@ -2,11 +2,12 @@
 #define CG_LAB1_TEXTURE_H
 
 #include <GL/glew.h>
+
+#include <string>
+
 #include <ImageMagick-7/Magick++.h>
 #include <ImageMagick-7/Magick++/Blob.h>
 #include <ImageMagick-7/Magick++/Exception.h>
-
-#include <string>
 
 class Texture {
     public:

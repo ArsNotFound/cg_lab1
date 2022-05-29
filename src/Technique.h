@@ -17,6 +17,7 @@ class Technique {
 
     protected:
     bool addShader(GLenum shaderType, const std::string &shaderText);
+    bool addShaderFromFile(GLenum shaderType, const std::string &filepath);
     bool finalize();
     GLint getUniformLocation(const std::string &uniformName) const;
 

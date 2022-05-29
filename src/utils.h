@@ -3,8 +3,11 @@
 
 #include <GL/glew.h>
 
+#include <iostream>
 #include <string>
 #include <vector>
+
+#define INVALID_OGL_VALUE 0xFFFFFFFF
 
 std::string readFile(const std::string &filePath);
 
