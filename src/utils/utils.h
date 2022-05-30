@@ -7,7 +7,23 @@
 #include <string>
 #include <vector>
 
+#include <boost/format.hpp>
+
 #define INVALID_OGL_VALUE 0xFFFFFFFF
+
+#define GLExitIfError()                                               \
+    {                                                                 \
+        GLenum error = glGetError();                                  \
+                                                                      \
+        if (error != GL_NO_ERROR) {                                   \
+            boost::format es("OpenGL error is %1:%2:%3$#x (%4)");     \
+            es % __FILE__ % __LINE__ % error % gluErrorString(error); \
+            std::cerr << es << std::endl;                             \
+            exit(0);                                                  \
+        }                                                             \
+    }
+
+#define GLCheckError() (glGetError() == GL_NO_ERROR)
 
 std::string readFile(const std::string &filePath);
 

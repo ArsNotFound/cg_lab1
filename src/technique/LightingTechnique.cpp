@@ -30,7 +30,7 @@ bool LightingTechnique::init() {
 
     mColorMapLocation = getUniformLocation("gColorMap");
     mShadowMapLocation = getUniformLocation("gShadowMap");
-    mShadowMapLocation = getUniformLocation("gNormalMap");
+    mNormalMapLocation = getUniformLocation("gNormalMap");
 
     mEyeWorldPosLocation = getUniformLocation("gEyeWorldPos");
     mMatSpecularIntensityLocation = getUniformLocation("gMatSpecularIntensity");
@@ -138,7 +138,7 @@ bool LightingTechnique::init() {
         mNumSpotLightsLocation == INVALID_UNIFORM_LOCATION)
         return false;
 
-    return true;
+    return GLCheckError();
 }
 
 void LightingTechnique::setWVP(const glm::mat4 &wvp) const {

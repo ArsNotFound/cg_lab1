@@ -4,6 +4,8 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+#include "../utils/utils.h"
+
 ShadowMapTechnique::ShadowMapTechnique(
     std::string vertexShaderFilename, std::string fragmentShaderFilename
 )
@@ -25,7 +27,7 @@ bool ShadowMapTechnique::init() {
     if (mWVPLocation == INVALID_UNIFORM_LOCATION ||
         mTextureLocation == INVALID_UNIFORM_LOCATION)
         return false;
-    return true;
+    return GLCheckError();
 }
 
 void ShadowMapTechnique::setWVP(const glm::mat4 &wvp) const {

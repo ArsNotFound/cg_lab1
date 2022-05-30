@@ -4,6 +4,8 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+#include "../utils/utils.h"
+
 BillboardTechnique::BillboardTechnique(
     std::string vertexShaderFilename,
     std::string geometryShaderFilename,
@@ -33,7 +35,7 @@ bool BillboardTechnique::init() {
         mColorMapLocation == INVALID_UNIFORM_LOCATION)
         return false;
 
-    return true;
+    return GLCheckError();
 }
 
 void BillboardTechnique::setVP(const glm::mat4& vp) const {

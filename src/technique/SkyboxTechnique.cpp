@@ -4,6 +4,8 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+#include "../utils/utils.h"
+
 SkyboxTechnique::SkyboxTechnique(
     std::string vertexShaderFilename, std::string fragmentShaderFilename
 )
@@ -28,7 +30,7 @@ bool SkyboxTechnique::init() {
         mTextureLocation == INVALID_UNIFORM_LOCATION)
         return false;
 
-    return true;
+    return GLCheckError();
 }
 
 void SkyboxTechnique::setWVP(const glm::mat4& wvp) const {
