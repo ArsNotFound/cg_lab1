@@ -4,9 +4,9 @@
 #include <glm/trigonometric.hpp>
 
 const glm::mat4 &Pipeline::getWorldTransformation() {
-    static const glm::vec3 xAxis(1.0f, 0.0f, 0.0f);
-    static const glm::vec3 yAxis(0.0f, 1.0f, 0.0f);
-    static const glm::vec3 zAxis(0.0f, 0.0f, 1.0f);
+    static const glm::vec3 xAxis(-1.0f, 0.0f, 0.0f);
+    static const glm::vec3 yAxis(0.0f, -1.0f, 0.0f);
+    static const glm::vec3 zAxis(0.0f, 0.0f, -1.0f);
 
     glm::mat4 trans(1.0f);
     trans = glm::translate(trans, mWorldPos);

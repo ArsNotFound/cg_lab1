@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "billboard/BillboardList.h"
 #include "camera/Camera.h"
 #include "glut_backend/GLUTBackend.h"
 #include "glut_backend/ICallbacks.h"
@@ -19,8 +20,6 @@
 class Main : public ICallbacks {
     public:
         Main() {
-            mScale = 0.0f;
-
             mDirLight.ambientIntensity = 0.2f;
             mDirLight.diffuseIntensity = 0.8f;
             mDirLight.color = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -36,7 +35,7 @@ class Main : public ICallbacks {
         ~Main() override = default;
 
         bool init() {
-            glm::vec3 pos(0.5f, 1.025f, 0.25f);
+            glm::vec3 pos(0.5f, 1.0f, -1.0f);
             glm::vec3 target(0.0f, -0.5f, 1.0f);
             glm::vec3 up(0.0f, 1.0f, 0.0f);
 
@@ -56,8 +55,12 @@ class Main : public ICallbacks {
             mLightingEffect->setColorTextureUnit(0);
             mLightingEffect->setNormalMapTextureUnit(2);
 
-            mSphereMesh = std::make_unique<Mesh>();
-            if (!mSphereMesh->loadMesh("./content/box.obj")) {
+            mGround = std::make_unique<Mesh>();
+            if (!mGround->loadMesh("./content/quad.obj")) {
+                return false;
+            }
+
+            if (!mBillboardList.init("./content/monster_hellknight.png")) {
                 return false;
             }
 
@@ -73,26 +76,23 @@ class Main : public ICallbacks {
                 return false;
             }
 
-            mTrivialNormalMap =
-                std::make_unique<Texture>(GL_TEXTURE_2D, "./content/normal_up.jpg");
-            if (!mTrivialNormalMap->load()) {
-                return false;
-            }
-
             return true;
         }
 
         void renderSceneCB() override {
             mGameCamera->onRender();
-            mScale += 0.05f;
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             mLightingEffect->enable();
 
+            mTexture->bind(COLOR_TEXTURE_UNIT);
+            mNormalMap->bind(NORMAL_TEXTURE_UNIT);
+
             Pipeline p;
-            p.setRotation(0.0f, mScale, 0.0f);
-            p.setWorldPos(0.0f, 0.0f, 3.0f);
+            p.setScale(20.0f, 20.0f, 20.0f);
+            p.setRotation(90.0f, 0.0f, 0.0f);
+            p.setWorldPos(0.0f, 0.0f, 0.0f);
             p.setCamera(
                 mGameCamera->getPos(), mGameCamera->getTarget(), mGameCamera->getUp()
             );
@@ -100,16 +100,9 @@ class Main : public ICallbacks {
 
             mLightingEffect->setWVP(p.getWVPTransformation());
             mLightingEffect->setWorldMatrix(p.getWorldTransformation());
+//            mGround->render();
 
-            mTexture->bind(COLOR_TEXTURE_UNIT);
-
-            if (mBumpMapEnabled) {
-                mNormalMap->bind(NORMAL_TEXTURE_UNIT);
-            } else {
-                mTrivialNormalMap->bind(NORMAL_TEXTURE_UNIT);
-            }
-
-            mSphereMesh->render();
+            mBillboardList.render(p.getWVPTransformation(), mGameCamera->getPos());
 
             glutSwapBuffers();
         }
@@ -125,10 +118,6 @@ class Main : public ICallbacks {
                 case 'q':
                     glutLeaveMainLoop();
                     break;
-                case 'b':
-                    mBumpMapEnabled = !mBumpMapEnabled;
-                    std::cout << "BumpMapEnabled = " << mBumpMapEnabled << std::endl;
-                    break;
                 default:
                     break;
             }
@@ -137,17 +126,16 @@ class Main : public ICallbacks {
         void passiveMouseCB(int x, int y) override { mGameCamera->onMouse(x, y); }
 
     private:
-        float mScale;
         PersProjInfo mPersProjInfo;
         DirectionLight mDirLight;
         std::shared_ptr<Camera> mGameCamera;
         std::unique_ptr<LightingTechnique> mLightingEffect;
 
-        std::unique_ptr<Mesh> mSphereMesh;
+        BillboardList mBillboardList;
+
+        std::unique_ptr<Mesh> mGround;
         std::unique_ptr<Texture> mTexture;
         std::unique_ptr<Texture> mNormalMap;
-        std::unique_ptr<Texture> mTrivialNormalMap;
-        bool mBumpMapEnabled = true;
 };
 
 int main(int argc, char **argv) {
