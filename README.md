@@ -1,252 +1,265 @@
-# CG LAB 3
+# CG LAB 5
 
-Третья лабораторная работа по компьютерной графике.
+Пятая лабораторная работа по компьютерной графике.
 
 ## Выполнено:
 
-### Создание класса камеры
+### Работа с тенью
+
+ShadowMapFBO:
 
 ```c++
-class Camera {
-public:
-    Camera(int windowWidth, int windowHeight);
+class ShadowMapFBO {
+    public:
+    ShadowMapFBO();
 
-    Camera(int windowWidth, int windowHeight, const glm::vec3 &pos, const glm::vec3 &target, const glm::vec3 &up);
+    ~ShadowMapFBO();
 
-    const glm::vec3 &getPos() const {
-        return mPos;
-    }
+    bool init(unsigned int windowWidth, unsigned int windowHeight);
 
-    const glm::vec3 &getTarget() const {
-        return mTarget;
-    }
+    void bindForWriting() const;
 
-    const glm::vec3 &getUp() const {
-        return mUp;
-    }
+    void bindForReading(GLenum textureUnit) const;
 
-    bool onKeyPressed(int key);
-
-    void onMouse(int x, int y);
-
-    void onRender();
-
-private:
-    void init();
-
-    void update();
-
-    glm::vec3 mPos;    // Позиция камеры
-    glm::vec3 mTarget; // Направление камеры
-    glm::vec3 mUp;     // "Вверх" камеры
-
-    int mWindowWidth;  // Ширина экрана
-    int mWindowHeight; // Высота экрана
-
-    float mAngleH;     // Горизонтальный угол
-    float mAngleV;     // Вертикальный угол
-
-    // Переменные, показывающие, что камера находится на одном из краёв экрана
-    bool mOnUpperEdge;
-    bool mOnLowerEdge;
-    bool mOnLeftEdge;
-    bool mOnRightEdge;
-
-    glm::ivec2 mMousePos; // Позиция мыши
+    private:
+    GLuint mFBO;
+    GLuint mShadowMap;
 };
 ```
 
-### Задание callback функций для обработки нажатий на клавиши и движения мыши
+ShadowTechnique:
 
 ```c++
-// Callback нажатия клавиши
-void specialKeyboardCallback(int key, __attribute__((unused)) int x, __attribute__((unused)) int y) {
-gameCamera->onKeyPressed(key);
-}
+class ShadowMapTechnique : public Technique {
+    public:
+    ShadowMapTechnique(std::string vertexShaderFilename,
+                       std::string fragmentShaderFilename);
 
-// Callback движения мыши
-void passiveMouseCallback(int x, int y) {
-gameCamera->onMouse(x, y);
-}
+    bool init() override;
 
-// Callback нажатия клавиши
-void keyboardCallback(unsigned char Key, int x, int y) {
-switch (Key) {
-case 'q':
-exit(0);
-}
-}
-```
+    void setWVP(const glm::mat4& wvp) const;
 
-### Создание класса Texture
+    void setTextureUnit(unsigned int textureUnit) const;
 
-```c++
-class Texture {
-public:
-    Texture(GLenum textureTarget, const std::string& fileName);
-    // Функция загрузки текстуры
-    bool load();
-    // Функция привязки текстуры
-    void bind(GLenum textureUnit);
+    private:
+    std::string mVertexShaderFilename;
+    std::string mFragmentShaderFilename;
 
-private:
-    std::string mFileName;  // Имя файла
-    GLenum mTextureTarget;  // Куда ставится текстура
-    GLuint mTextureObj;     // Объект текстуры
-    Magick::Image* mPImage; // Изображение
-    Magick::Blob mBlob;     // Данные изображения
-};
-
-```
-
-### Наложение текстур на фигуру
-```glsl
-in vec2 TexCoord0;
- 
-out vec4 FragColor;
- 
-uniform sampler2D gSampler;
- 
-void main()
-{
-    FragColor = texture2D(gSampler, TexCoord0.st);
+    GLint mWVPLocation;
+    GLint mTextureLocation;
 };
 ```
 
-### Рефакторинг кода на модули
-
-### Различные виды освещения
+shadow_vertex:
 
 ```glsl
-// Версия шейдера 3.3
 #version 330
 
-const int MAX_POINT_LIGHTS = 3;
-const int MAX_SPOT_LIGHTS = 3;
+layout (location = 0) in vec3 Position;
+layout (location = 1) in vec2 TexCoord;
+layout (location = 2) in vec3 Normal;
 
-in vec2 TexCoord0;
-in vec3 WorldPos0;
-in vec3 Normal0;
+uniform mat4 gWVP;
+
+out vec2 TexCoordOut;
+
+void main()
+{
+    gl_Position = gWVP * vec4(Position, 1.0);
+    TexCoordOut = TexCoord;
+}
+```
+
+shadow_fragment:
+```glsl
+#version 330
+
+in vec2 TexCoordOut;
+uniform sampler2D gShadowMap;
 
 out vec4 FragColor;
 
-// Основа для всех видов
-struct BaseLight {
-    vec3 Color;
-    float AmbientIntensity;
-    float DiffuseIntensity;
-};
+void main()
+{
+    float Depth = texture(gShadowMap, TexCoordOut).x;
+    Depth = 1.0 - (1.0 - Depth) * 25.0;
+    FragColor = vec4(Depth);
+}   
+```
 
-// Направленный свет
-struct DirectionalLight {
-    BaseLight Base;
-    vec3 Direction;
-};
+light_fragment:
+```glsl
+uniform sampler2D gShadowMap;
 
-// Параметры затухания
-struct Attenuation {
-    float Constant;
-    float Linear;
-    float Exp;
-};
+float calcShadowFactor(vec4 LightSpacePos) {
+    vec3 ProjCoords = LightSpacePos.xyz / LightSpacePos.w;
 
-// Точечный свет
-struct PointLight {
-    BaseLight Base;
-    vec3 Position;
-    Attenuation Attenuation;
-};
+    vec2 UVCoords;
+    UVCoords.x = 0.5 * ProjCoords.x + 0.5;
+    UVCoords.y = 0.5 * ProjCoords.y + 0.5;
 
-// Прожектор
-struct SpotLight {
-    PointLight Base;
-    vec3 Direction;
-    float Cutoff;
-};
+    float z= 0.5 * ProjCoords.z + 0.5;
 
-uniform DirectionalLight gDirectionalLight;
-
-uniform int gNumPointLights;
-uniform PointLight gPointLights[MAX_POINT_LIGHTS];
-
-uniform int gNumSpotLights;
-uniform SpotLight gSpotLights[MAX_SPOT_LIGHTS];
-
-uniform sampler2D gSampler;
-
-uniform vec3 gEyeWorldPos;
-uniform float gMatSpecularIntensity;
-uniform float gMatSpecularPower;
-
-// Общая функция вычисления света
-vec4 calcLightInternal(BaseLight Light, vec3 LightDirection, vec3 Normal) {
-    vec4 AmbientColor = vec4(Light.Color, 1.0f) * Light.AmbientIntensity;
-    float DiffuseFactor = dot(Normal, -LightDirection);
-
-    vec4 DiffuseColor = vec4(0, 0, 0, 0);
-    vec4 SpecularColor = vec4(0, 0, 0, 0);
-
-    if (DiffuseFactor > 0) {
-        DiffuseColor = vec4(Light.Color, 1.0f) *
-        Light.DiffuseIntensity * DiffuseFactor;
-
-        vec3 VertexToEye = normalize(gEyeWorldPos - WorldPos0);
-        vec3 LightReflect = normalize(reflect(LightDirection, Normal));
-        float SpecularFactor = dot(VertexToEye, LightReflect);
-        SpecularFactor = pow(SpecularFactor, gMatSpecularPower);
-        if (SpecularFactor > 0) {
-            SpecularColor = vec4(Light.Color, 1.0f)
-            * gMatSpecularIntensity * SpecularFactor;
-        }
-    }
-
-    return (AmbientColor + DiffuseColor + SpecularColor);
-}
-
-// Функция вычисления направленного света
-vec4 calcDirectionalLight(vec3 Normal) {
-    return calcLightInternal(gDirectionalLight.Base, gDirectionalLight.Direction, Normal);
-}
-
-// Функция вычисления точечного света
-vec4 calcPointLight(PointLight l, vec3 Normal) {
-    vec3 LightDirection = WorldPos0 - l.Position;
-    float Distance = length(LightDirection);
-    LightDirection = normalize(LightDirection);
-
-    vec4 Color = calcLightInternal(l.Base, LightDirection, Normal);
-    float Attenuation = l.Attenuation.Constant +
-                        l.Attenuation.Linear * Distance +
-                        l.Attenuation.Exp * Distance * Distance;
-
-    return Color / Attenuation;
-}
-
-// Функция вычисления прожектора
-vec4 calcSpotLight(SpotLight l, vec3 Normal) {
-    vec3 LightToPixel = normalize(WorldPos0 - l.Base.Position);
-    float SpotFactor = dot(LightToPixel, l.Direction);
-
-    if (SpotFactor > l.Cutoff) {
-        vec4 Color = calcPointLight(l.Base, Normal);
-        return Color * (1.0 - (1.0 - SpotFactor) * 1.0/(1.0 - l.Cutoff));
-    } else {
-        return vec4(0, 0, 0, 0);
-    }
-}
-
-void main() {
-    vec3 Normal = normalize(Normal0);
-    vec4 TotalLight = calcDirectionalLight(Normal);
-
-    for (int i = 0; i < gNumPointLights; i++) {
-        TotalLight += calcPointLight(gPointLights[i], Normal);
-    }
-
-    for (int i = 0; i < gNumSpotLights; i++) {
-        TotalLight += calcSpotLight(gSpotLights[i], Normal);
-    }
-
-    FragColor = texture2D(gSampler, TexCoord0.xy) * TotalLight;
+    float Depth = texture(gShadowMap, UVCoords).x;
+    if (Depth < (z + 0.00001))
+    return 0.5;
+    else
+    return 1.0;
 }
 ```
+
+light_vertex:
+```glsl
+uniform mat4 gLightWVP;
+
+void main() {
+    ...
+    LightSpacePos = gLightWVP * vec4(Position, 1.0);
+    ...
+}
+```
+
+Результат:
+![Результат](content/readme/tut24.png)
+
+### Создание скайбокса
+
+Skybox:
+```c++
+class Skybox {
+    public:
+        Skybox(std::shared_ptr<const Camera> camera, const PersProjInfo& persProjInfo);
+
+        ~Skybox();
+
+        bool init(const std::string& directory,
+                  const std::string& posXFilename,
+                  const std::string& negXFilename,
+                  const std::string& posYFilename,
+                  const std::string& negYFilename,
+                  const std::string& posZFilename,
+                  const std::string& negZFilename);
+
+        void render();
+
+    private:
+        std::unique_ptr<SkyboxTechnique> mSkyboxTechnique;
+        std::shared_ptr<const Camera> mCamera;
+        std::unique_ptr<CubemapTexture> mCubemapTex;
+        std::unique_ptr<Mesh> mMesh;
+        PersProjInfo mPersProjInfo;
+};
+```
+
+SkyboxTechnique:
+```c++
+class SkyboxTechnique : public Technique {
+    public:
+        SkyboxTechnique(
+            std::string vertexShaderFilename, std::string fragmentShaderFilename
+        );
+
+        ~SkyboxTechnique();
+
+        bool init() override;
+
+        void setWVP(const glm::mat4& wvp) const;
+
+        void setTextureUnit(GLint textureUnit) const;
+
+    private:
+        std::string mVertexShaderFilename;
+        std::string mFragmentShaderFilename;
+
+        GLint mWVPLocation;
+        GLint mTextureLocation;
+};
+```
+
+CubemapTexture:
+```c++
+class CubemapTexture {
+    public:
+        CubemapTexture(
+            const std::string& directory,
+            const std::string& poxXFilename,
+            const std::string& negXFilename,
+            const std::string& posYFilename,
+            const std::string& negYFilename,
+            const std::string& posZFilename,
+            const std::string& negZFilename
+        );
+
+        ~CubemapTexture();
+
+        bool load();
+
+        void bind(GLenum textureUnit) const;
+
+    private:
+        std::vector<std::string> mFilenames;
+        GLuint mTextureObj;
+};
+```
+
+skybox_vertex:
+```glsl
+#version 330
+
+layout (location = 0) in vec3 Position;
+
+uniform mat4 gWVP;
+
+out vec3 TexCoord0;
+
+void main() {
+    vec4 WVP_Pos = gWVP * vec4(Position, 1.0);
+
+    gl_Position = WVP_Pos.xyww;
+
+    TexCoord0 = Position;
+}
+```
+
+skybox_fragment:
+```glsl
+#version 330
+
+in vec3 TexCoord0;
+
+out vec4 FragColor;
+
+uniform samplerCube gCubemapTexture;
+
+void main() {
+    FragColor = texture(gCubemapTexture, TexCoord0);
+}
+```
+
+Результат:
+![Результат](content/readme/tut25.png)
+
+### Работа с нормалями
+
+light_fragment:
+
+```glsl
+vec3 CalcBumpedNormal() {
+    vec3 Normal = normalize(Normal0);
+    vec3 Tangent = normalize(Tangent0);
+    Tangent = normalize(Tangent - dot(Tangent, Normal) * Normal);
+    vec3 Bitangent = cross(Tangent, Normal);
+
+    vec3 BumpMapNormal = texture(gNormalMap, TexCoord0).xyz;
+    BumpMapNormal = 2.0 * BumpMapNormal - vec3(1.0, 1.0, 1.0);
+
+    vec3 NewNormal;
+    mat3 TBN = mat3(Tangent, Bitangent, Normal);
+    NewNormal = TBN * BumpMapNormal;
+    NewNormal = normalize(NewNormal);
+    return NewNormal;
+}
+```
+
+Результат:
+![Резултат](content/readme/tut26.png)

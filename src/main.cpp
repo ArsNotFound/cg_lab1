@@ -153,7 +153,7 @@ class Main : public ICallbacks {
 int main(int argc, char **argv) {
     GLUTBackend::init(argc, argv);
 
-    if (!GLUTBackend::createWindow(WINDOW_WIDTH, WINDOW_HEIGHT, false, "Tutorial 24"))
+    if (!GLUTBackend::createWindow(WINDOW_WIDTH, WINDOW_HEIGHT, false, "Tutorial 26"))
         return 1;
 
     auto app = std::make_shared<Main>();
