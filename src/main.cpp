@@ -238,7 +238,7 @@ int main(int argc, char **argv) {
     GLUTBackend::init(argc, argv);
 
     if (!GLUTBackend::createWindow(WINDOW_WIDTH, WINDOW_HEIGHT, false,
-                                   "Tutorial 17"))
+                                   "Tutorial 21"))
         return 1;
 
     auto app = std::make_shared<Main>();
