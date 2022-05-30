@@ -16,13 +16,15 @@ class Skybox {
 
         ~Skybox();
 
-        bool init(const std::string& directory,
-                  const std::string& posXFilename,
-                  const std::string& negXFilename,
-                  const std::string& posYFilename,
-                  const std::string& negYFilename,
-                  const std::string& posZFilename,
-                  const std::string& negZFilename);
+        bool init(
+            const std::string& directory,
+            const std::string& posXFilename,
+            const std::string& negXFilename,
+            const std::string& posYFilename,
+            const std::string& negYFilename,
+            const std::string& posZFilename,
+            const std::string& negZFilename
+        );
 
         void render();
 

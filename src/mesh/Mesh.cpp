@@ -1,5 +1,7 @@
 #include "Mesh.h"
 
+#include "../glut_backend/common.h"
+
 Mesh::MeshEntry::MeshEntry()
     : VB(INVALID_OGL_VALUE),
       IB(INVALID_OGL_VALUE),
@@ -34,6 +36,7 @@ bool Mesh::MeshEntry::init(
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
 
     glVertexAttribPointer(
         0,
@@ -60,6 +63,15 @@ bool Mesh::MeshEntry::init(
         reinterpret_cast<const GLvoid *>(VERTEX_NORMAL_OFFSET)
     );
 
+    glVertexAttribPointer(
+        3,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(Vertex),
+        reinterpret_cast<const GLvoid *>(VERTEX_TANGENT_OFFSET)
+    );
+
     glBindVertexArray(0);
 
     return true;
@@ -78,7 +90,8 @@ bool Mesh::loadMesh(const std::string &filename) {
 
     const aiScene *scene = importer.ReadFile(
         filename.c_str(),
-        aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs
+        aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_FlipUVs |
+            aiProcess_CalcTangentSpace
     );
 
     if (scene) {
@@ -114,11 +127,13 @@ void Mesh::initMesh(unsigned int index, const aiMesh *mesh) {
         const aiVector3D *normal = &(mesh->mNormals[i]);
         const aiVector3D *texCoord =
             mesh->HasTextureCoords(0) ? &(mesh->mTextureCoords[0][i]) : &Zero3D;
+        const aiVector3D *tangent = &(mesh->mTangents[i]);
 
         Vertex v(
             glm::vec3(pos->x, pos->y, pos->z),
             glm::vec2(texCoord->x, texCoord->y),
-            glm::vec3(normal->x, normal->y, normal->z)
+            glm::vec3(normal->x, normal->y, normal->z),
+            glm::vec3(tangent->x, tangent->y, tangent->z)
         );
         vertices.push_back(v);
     }
@@ -168,11 +183,11 @@ bool Mesh::initMaterials(const aiScene *scene, const std::string &filename) {
             }
         }
 
-//        if (!mTextures[i]) {
-//            mTextures[i] =
-//                std::make_shared<Texture>(GL_TEXTURE_2D, "./content/white.png");
-//            ret = mTextures[i]->load();
-//        }
+        //        if (!mTextures[i]) {
+        //            mTextures[i] =
+        //                std::make_shared<Texture>(GL_TEXTURE_2D, "./content/white.png");
+        //            ret = mTextures[i]->load();
+        //        }
     }
 
     return ret;
@@ -186,7 +201,7 @@ void Mesh::render() {
 
         const auto materialIndex = entry.materialIndex;
         if (materialIndex < mTextures.size() && mTextures[materialIndex])
-            mTextures[materialIndex]->bind(GL_TEXTURE0);
+            mTextures[materialIndex]->bind(COLOR_TEXTURE_UNIT);
 
         glDrawElements(
             GL_TRIANGLES, static_cast<GLsizei>(entry.numIndices), GL_UNSIGNED_INT, nullptr

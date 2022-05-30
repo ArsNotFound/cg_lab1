@@ -7,6 +7,7 @@
 #include "camera/Camera.h"
 #include "glut_backend/GLUTBackend.h"
 #include "glut_backend/ICallbacks.h"
+#include "glut_backend/common.h"
 #include "mesh/Mesh.h"
 #include "skybox/Skybox.h"
 #include "technique/LightingTechnique.h"
@@ -23,7 +24,7 @@ class Main : public ICallbacks {
             mDirLight.ambientIntensity = 0.2f;
             mDirLight.diffuseIntensity = 0.8f;
             mDirLight.color = glm::vec3(1.0f, 1.0f, 1.0f);
-            mDirLight.direction = glm::vec3(1.0f, -1.0f, 0.0f);
+            mDirLight.direction = glm::vec3(1.0f, 0.0f, 0.0f);
 
             mPersProjInfo.FOV = 60.0f;
             mPersProjInfo.width = WINDOW_WIDTH;
@@ -35,8 +36,8 @@ class Main : public ICallbacks {
         ~Main() override = default;
 
         bool init() {
-            glm::vec3 pos(0.0f, 1.0f, -20.0f);
-            glm::vec3 target(0.0f, 0.0f, 1.0f);
+            glm::vec3 pos(0.5f, 1.025f, 0.25f);
+            glm::vec3 target(0.0f, -0.5f, 1.0f);
             glm::vec3 up(0.0f, 1.0f, 0.0f);
 
             mGameCamera =
@@ -45,7 +46,6 @@ class Main : public ICallbacks {
             mLightingEffect = std::make_unique<LightingTechnique>(
                 "./shaders/light_vertex.glsl", "./shaders/light_fragment.glsl"
             );
-
             if (!mLightingEffect->init()) {
                 std::cerr << "Error initializing the lighting technique" << std::endl;
                 return false;
@@ -53,24 +53,29 @@ class Main : public ICallbacks {
 
             mLightingEffect->enable();
             mLightingEffect->setDirectionalLight(mDirLight);
-            mLightingEffect->setTextureUnit(0);
+            mLightingEffect->setColorTextureUnit(0);
+            mLightingEffect->setNormalMapTextureUnit(2);
 
-            mTankMesh = std::make_unique<Mesh>();
-            if (!mTankMesh->loadMesh("./content/phoenix_ugv.md2")) {
+            mSphereMesh = std::make_unique<Mesh>();
+            if (!mSphereMesh->loadMesh("./content/box.obj")) {
                 return false;
             }
 
-            mSkybox = std::make_unique<Skybox>(mGameCamera, mPersProjInfo);
+            mTexture = std::make_unique<Texture>(GL_TEXTURE_2D, "./content/bricks.jpg");
+            if (!mTexture->load()) {
+                return false;
+            }
+            mTexture->bind(COLOR_TEXTURE_UNIT);
 
-            if (!mSkybox->init(
-                    "./content/",
-                    "sp3right.jpg",
-                    "sp3left.jpg",
-                    "sp3top.jpg",
-                    "sp3bot.jpg",
-                    "sp3front.jpg",
-                    "sp3back.jpg"
-                )) {
+            mNormalMap =
+                std::make_unique<Texture>(GL_TEXTURE_2D, "./content/normal_map.jpg");
+            if (!mNormalMap->load()) {
+                return false;
+            }
+
+            mTrivialNormalMap =
+                std::make_unique<Texture>(GL_TEXTURE_2D, "./content/normal_up.jpg");
+            if (!mTrivialNormalMap->load()) {
                 return false;
             }
 
@@ -86,9 +91,8 @@ class Main : public ICallbacks {
             mLightingEffect->enable();
 
             Pipeline p;
-            p.setScale(0.1f, 0.1f, 0.1f);
             p.setRotation(0.0f, mScale, 0.0f);
-            p.setWorldPos(0.0f, -5.0f, 3.0f);
+            p.setWorldPos(0.0f, 0.0f, 3.0f);
             p.setCamera(
                 mGameCamera->getPos(), mGameCamera->getTarget(), mGameCamera->getUp()
             );
@@ -97,8 +101,15 @@ class Main : public ICallbacks {
             mLightingEffect->setWVP(p.getWVPTransformation());
             mLightingEffect->setWorldMatrix(p.getWorldTransformation());
 
-            mTankMesh->render();
-            mSkybox->render();
+            mTexture->bind(COLOR_TEXTURE_UNIT);
+
+            if (mBumpMapEnabled) {
+                mNormalMap->bind(NORMAL_TEXTURE_UNIT);
+            } else {
+                mTrivialNormalMap->bind(NORMAL_TEXTURE_UNIT);
+            }
+
+            mSphereMesh->render();
 
             glutSwapBuffers();
         }
@@ -114,6 +125,10 @@ class Main : public ICallbacks {
                 case 'q':
                     glutLeaveMainLoop();
                     break;
+                case 'b':
+                    mBumpMapEnabled = !mBumpMapEnabled;
+                    std::cout << "BumpMapEnabled = " << mBumpMapEnabled << std::endl;
+                    break;
                 default:
                     break;
             }
@@ -128,8 +143,11 @@ class Main : public ICallbacks {
         std::shared_ptr<Camera> mGameCamera;
         std::unique_ptr<LightingTechnique> mLightingEffect;
 
-        std::unique_ptr<Mesh> mTankMesh;
-        std::unique_ptr<Skybox> mSkybox;
+        std::unique_ptr<Mesh> mSphereMesh;
+        std::unique_ptr<Texture> mTexture;
+        std::unique_ptr<Texture> mNormalMap;
+        std::unique_ptr<Texture> mTrivialNormalMap;
+        bool mBumpMapEnabled = true;
 };
 
 int main(int argc, char **argv) {

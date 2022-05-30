@@ -2,14 +2,13 @@
 
 #include <iostream>
 
-const std::vector<GLenum> types = { // NOLINT(cert-err58-cpp)
+const std::vector<GLenum> types = {  // NOLINT(cert-err58-cpp)
     GL_TEXTURE_CUBE_MAP_POSITIVE_X,
     GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
     GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
     GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
     GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
-    GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
-};
+    GL_TEXTURE_CUBE_MAP_NEGATIVE_Z};
 
 CubemapTexture::CubemapTexture(
     const std::string &directory,
@@ -37,8 +36,7 @@ CubemapTexture::CubemapTexture(
 }
 
 CubemapTexture::~CubemapTexture() {
-    if (mTextureObj != 0)
-        glDeleteTextures(1, &mTextureObj);
+    if (mTextureObj != 0) glDeleteTextures(1, &mTextureObj);
 }
 
 bool CubemapTexture::load() {

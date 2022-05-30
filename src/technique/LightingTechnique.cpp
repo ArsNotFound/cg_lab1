@@ -27,7 +27,10 @@ bool LightingTechnique::init() {
 
     mWVPLocation = getUniformLocation("gWVP");
     mWorldMatrixLocation = getUniformLocation("gWorld");
-    mSamplerLocation = getUniformLocation("gSampler");
+
+    mColorMapLocation = getUniformLocation("gColorMap");
+    mShadowMapLocation = getUniformLocation("gShadowMap");
+    mShadowMapLocation = getUniformLocation("gNormalMap");
 
     mEyeWorldPosLocation = getUniformLocation("gEyeWorldPos");
     mMatSpecularIntensityLocation = getUniformLocation("gMatSpecularIntensity");
@@ -41,7 +44,6 @@ bool LightingTechnique::init() {
     mDirLightLocation.direction = getUniformLocation("gDirectionalLight.Direction");
 
     mLightWVPLocation = getUniformLocation("gLightWVP");
-    mShadowMapLocation = getUniformLocation("gShadowMap");
 
     mNumPointLightsLocation = getUniformLocation("gNumPointLights");
 
@@ -120,7 +122,10 @@ bool LightingTechnique::init() {
     }
 
     if (mWVPLocation == INVALID_UNIFORM_LOCATION ||
-        mSamplerLocation == INVALID_UNIFORM_LOCATION ||
+        mWorldMatrixLocation == INVALID_UNIFORM_LOCATION ||
+        mColorMapLocation == INVALID_UNIFORM_LOCATION ||
+        mShadowMapLocation == INVALID_UNIFORM_LOCATION ||
+        mNormalMapLocation == INVALID_UNIFORM_LOCATION ||
         mEyeWorldPosLocation == INVALID_UNIFORM_LOCATION ||
         mMatSpecularIntensityLocation == INVALID_UNIFORM_LOCATION ||
         mMatSpecularPowerLocation == INVALID_UNIFORM_LOCATION ||
@@ -129,7 +134,6 @@ bool LightingTechnique::init() {
         mDirLightLocation.diffuseIntensity == INVALID_UNIFORM_LOCATION ||
         mDirLightLocation.direction == INVALID_UNIFORM_LOCATION ||
         mLightWVPLocation == INVALID_UNIFORM_LOCATION ||
-        mShadowMapLocation == INVALID_UNIFORM_LOCATION ||
         mNumPointLightsLocation == INVALID_UNIFORM_LOCATION ||
         mNumSpotLightsLocation == INVALID_UNIFORM_LOCATION)
         return false;
@@ -145,16 +149,20 @@ void LightingTechnique::setWorldMatrix(const glm::mat4 &worldInverse) const {
     glUniformMatrix4fv(mWorldMatrixLocation, 1, GL_FALSE, glm::value_ptr(worldInverse));
 }
 
-void LightingTechnique::setTextureUnit(int textureUnit) const {
-    glUniform1i(mSamplerLocation, textureUnit);
-}
-
-void LightingTechnique::setLightWVP(const glm::mat4 &lightWVP) const {
-    glUniformMatrix4fv(mLightWVPLocation, 1, GL_FALSE, glm::value_ptr(lightWVP));
+void LightingTechnique::setColorTextureUnit(int textureUnit) const {
+    glUniform1i(mColorMapLocation, textureUnit);
 }
 
 void LightingTechnique::setShadowMapTextureUnit(int textureUnit) const {
     glUniform1i(mShadowMapLocation, textureUnit);
+}
+
+void LightingTechnique::setNormalMapTextureUnit(int textureUnit) const {
+    glUniform1i(mNormalMapLocation, textureUnit);
+}
+
+void LightingTechnique::setLightWVP(const glm::mat4 &lightWVP) const {
+    glUniformMatrix4fv(mLightWVPLocation, 1, GL_FALSE, glm::value_ptr(lightWVP));
 }
 
 void LightingTechnique::setDirectionalLight(const DirectionLight &light) const {

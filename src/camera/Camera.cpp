@@ -5,8 +5,8 @@
 #include <iostream>
 
 #include <glm/geometric.hpp>
-#include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 // Конструкторы камеры
 Camera::Camera(int windowWidth, int windowHeight)

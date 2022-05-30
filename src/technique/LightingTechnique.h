@@ -64,7 +64,11 @@ class LightingTechnique : public Technique {
 
         void setWorldMatrix(const glm::mat4 &worldInverse) const;
 
-        void setTextureUnit(int textureUnit) const;
+        void setColorTextureUnit(int textureUnit) const;
+
+        void setShadowMapTextureUnit(int textureUnit) const;
+
+        void setNormalMapTextureUnit(int textureUnit) const;
 
         void setDirectionalLight(const DirectionLight &light) const;
 
@@ -80,22 +84,22 @@ class LightingTechnique : public Technique {
 
         void setLightWVP(const glm::mat4 &lightWVP) const;
 
-        void setShadowMapTextureUnit(int textureUnit) const;
-
     private:
         std::string mVertexShaderFilename;
         std::string mFragmentShaderFilename;
 
         GLint mWVPLocation;
         GLint mWorldMatrixLocation;
-        GLint mSamplerLocation;
 
         GLint mEyeWorldPosLocation;
         GLint mMatSpecularIntensityLocation;
         GLint mMatSpecularPowerLocation;
 
         GLint mLightWVPLocation;
+
+        GLint mColorMapLocation;
         GLint mShadowMapLocation;
+        GLint mNormalMapLocation;
 
         struct sBaseLight {
                 GLint color;

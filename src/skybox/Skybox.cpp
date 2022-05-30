@@ -3,6 +3,8 @@
 #include <iostream>
 #include <utility>
 
+#include "../glut_backend/common.h"
+
 Skybox::Skybox(std::shared_ptr<const Camera> camera, const PersProjInfo &persProjInfo)
     : mCamera(std::move(camera)),
       mPersProjInfo(persProjInfo) {}
@@ -63,7 +65,7 @@ void Skybox::render() {
     p.setCamera(mCamera->getPos(), mCamera->getTarget(), mCamera->getUp());
     p.setPerspectiveProj(mPersProjInfo);
     mSkyboxTechnique->setWVP(p.getWVPTransformation());
-    mCubemapTex->bind(GL_TEXTURE0);
+    mCubemapTex->bind(COLOR_TEXTURE_UNIT);
     mMesh->render();
 
     glDepthFunc(oldDepthFuncMode);
