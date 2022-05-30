@@ -2,7 +2,10 @@
 
 #include <GL/freeglut.h>
 
+#include <iostream>
+
 #include <glm/geometric.hpp>
+#include <glm/gtx/string_cast.hpp>
 #include <glm/gtx/rotate_vector.hpp>
 
 // Конструкторы камеры
@@ -58,7 +61,7 @@ void Camera::init() {
     glutWarpPointer(mMousePos.x, mMousePos.y);
 }
 
-const float stepSize = 0.1f;
+const float stepSize = 0.4f;
 
 // Функция обработки нажатия на клавишу движения
 bool Camera::onKeyPressed(int key) {

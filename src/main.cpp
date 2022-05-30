@@ -5,12 +5,11 @@
 #include <memory>
 
 #include "camera/Camera.h"
-#include "fbo/ShadowMapFBO.h"
 #include "glut_backend/GLUTBackend.h"
 #include "glut_backend/ICallbacks.h"
 #include "mesh/Mesh.h"
+#include "skybox/Skybox.h"
 #include "technique/LightingTechnique.h"
-#include "technique/ShadowMapTechnique.h"
 #include "utils/Pipeline.h"
 
 #define WINDOW_WIDTH 1280
@@ -18,30 +17,30 @@
 
 class Main : public ICallbacks {
     public:
-        Main()
-            : mScale(0.0f) {
-            mSpotLight.ambientIntensity = 0.1f;
-            mSpotLight.diffuseIntensity = 0.9f;
-            mSpotLight.color = glm::vec3(1.0f, 1.0f, 1.0f);
-            mSpotLight.attenuation.linear = 0.01f;
-            mSpotLight.position = glm::vec3(-20.0, 20.0, 1.0f);
-            mSpotLight.direction = glm::vec3(1.0f, -1.0f, 0.0f);
-            mSpotLight.cutoff = 20.0f;
+        Main() {
+            mScale = 0.0f;
+
+            mDirLight.ambientIntensity = 0.2f;
+            mDirLight.diffuseIntensity = 0.8f;
+            mDirLight.color = glm::vec3(1.0f, 1.0f, 1.0f);
+            mDirLight.direction = glm::vec3(1.0f, -1.0f, 0.0f);
+
+            mPersProjInfo.FOV = 60.0f;
+            mPersProjInfo.width = WINDOW_WIDTH;
+            mPersProjInfo.height = WINDOW_HEIGHT;
+            mPersProjInfo.zNear = 1.0f;
+            mPersProjInfo.zFar = 100.0f;
         }
 
         ~Main() override = default;
 
         bool init() {
-            glm::vec3 pos(3.0f, 8.0f, -10.0f);
-            glm::vec3 target(0.0f, -0.2f, 1.0f);
+            glm::vec3 pos(0.0f, 1.0f, -20.0f);
+            glm::vec3 target(0.0f, 0.0f, 1.0f);
             glm::vec3 up(0.0f, 1.0f, 0.0f);
 
-            if (!mShadowMapFBO.init(WINDOW_WIDTH, WINDOW_HEIGHT)) {
-                return false;
-            }
-
             mGameCamera =
-                std::make_unique<Camera>(WINDOW_WIDTH, WINDOW_HEIGHT, pos, target, up);
+                std::make_shared<Camera>(WINDOW_WIDTH, WINDOW_HEIGHT, pos, target, up);
 
             mLightingEffect = std::make_unique<LightingTechnique>(
                 "./shaders/light_vertex.glsl", "./shaders/light_fragment.glsl"
@@ -53,105 +52,55 @@ class Main : public ICallbacks {
             }
 
             mLightingEffect->enable();
-            mLightingEffect->setSpotLights({mSpotLight});
+            mLightingEffect->setDirectionalLight(mDirLight);
             mLightingEffect->setTextureUnit(0);
-            mLightingEffect->setShadowMapTextureUnit(1);
 
-            mShadowMapEffect = std::make_unique<ShadowMapTechnique>(
-                "./shaders/shadow_vertex.glsl", "./shaders/shadow_fragment.glsl"
-            );
-            if (!mShadowMapEffect->init()) {
-                std::cerr << "Error initializing the shadow map technique" << std::endl;
+            mTankMesh = std::make_unique<Mesh>();
+            if (!mTankMesh->loadMesh("./content/phoenix_ugv.md2")) {
                 return false;
             }
 
-            mQuad = std::make_unique<Mesh>();
-            if (!mQuad->loadMesh("./content/quad.obj")) {
+            mSkybox = std::make_unique<Skybox>(mGameCamera, mPersProjInfo);
+
+            if (!mSkybox->init(
+                    "./content/",
+                    "sp3right.jpg",
+                    "sp3left.jpg",
+                    "sp3top.jpg",
+                    "sp3bot.jpg",
+                    "sp3front.jpg",
+                    "sp3back.jpg"
+                )) {
                 return false;
             }
 
-            mGroundTexture =
-                std::make_unique<Texture>(GL_TEXTURE_2D, "./content/test.png");
-            if (!mGroundTexture->load()) {
-                return false;
-            }
-
-            mMesh = std::make_unique<Mesh>();
-            return mMesh->loadMesh("./content/phoenix_ugv.md2");
+            return true;
         }
 
         void renderSceneCB() override {
             mGameCamera->onRender();
-            mScale += 0.5f;
+            mScale += 0.05f;
 
-            ShadowMapPass();
-            RenderPass();
-
-            glutSwapBuffers();
-        }
-
-        virtual void ShadowMapPass() {
-            mShadowMapFBO.bindForWriting();
-
-            glClear(GL_DEPTH_BUFFER_BIT);
-
-            mShadowMapEffect->enable();
-
-            Pipeline p;
-            p.setScale(0.1f, 0.1f, 0.1f);
-            p.setRotation(0.0f, mScale, 0.0f);
-            p.setWorldPos(0.0f, 0.0f, 5.0f);
-            p.setCamera(
-                mSpotLight.position, mSpotLight.direction, glm::vec3(0.0f, 1.0f, 0.0f)
-            );
-            p.setPerspectiveProj(60.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 50.0f);
-            mShadowMapEffect->setWVP(p.getWVPTransformation());
-            mMesh->render();
-
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        }
-
-        virtual void RenderPass() {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             mLightingEffect->enable();
 
-            mShadowMapFBO.bindForReading(GL_TEXTURE1);
-
             Pipeline p;
-            p.setPerspectiveProj(60.0f, WINDOW_WIDTH, WINDOW_HEIGHT, 1.0f, 50.0f);
-            p.setScale(10.0f, 10.0f, 10.0f);
-            p.setWorldPos(0.0f, 0.0f, 1.0f);
-            p.setRotation(90.0f, 0.0f, 0.0f);
-            p.setCamera(
-                mGameCamera->getPos(), mGameCamera->getTarget(), mGameCamera->getUp()
-            );
-            mLightingEffect->setWVP(p.getWVPTransformation());
-            mLightingEffect->setWorldMatrix(p.getWorldTransformation());
-
-            p.setCamera(
-                mSpotLight.position, mSpotLight.direction, glm::vec3(0.0f, 1.0f, 0.0f)
-            );
-            mLightingEffect->setLightWVP(p.getWVPTransformation());
-            mLightingEffect->setEyeWorldPos(mGameCamera->getPos());
-            mGroundTexture->bind(GL_TEXTURE0);
-            mQuad->render();
-
             p.setScale(0.1f, 0.1f, 0.1f);
             p.setRotation(0.0f, mScale, 0.0f);
-            p.setWorldPos(0.0f, 0.0f, 3.0f);
+            p.setWorldPos(0.0f, -5.0f, 3.0f);
             p.setCamera(
                 mGameCamera->getPos(), mGameCamera->getTarget(), mGameCamera->getUp()
             );
+            p.setPerspectiveProj(mPersProjInfo);
+
             mLightingEffect->setWVP(p.getWVPTransformation());
             mLightingEffect->setWorldMatrix(p.getWorldTransformation());
 
-            p.setCamera(
-                mSpotLight.position, mSpotLight.direction, glm::vec3(0.0f, 1.0f, 0.0f)
-            );
-            mLightingEffect->setLightWVP(p.getWVPTransformation());
+            mTankMesh->render();
+            mSkybox->render();
 
-            mMesh->render();
+            glutSwapBuffers();
         }
 
         void idleCB() override { renderSceneCB(); }
@@ -174,23 +123,19 @@ class Main : public ICallbacks {
 
     private:
         float mScale;
-
-        std::unique_ptr<Mesh> mMesh;
-        std::unique_ptr<Mesh> mQuad;
-        std::unique_ptr<Texture> mGroundTexture;
-
+        PersProjInfo mPersProjInfo;
+        DirectionLight mDirLight;
+        std::shared_ptr<Camera> mGameCamera;
         std::unique_ptr<LightingTechnique> mLightingEffect;
-        std::unique_ptr<ShadowMapTechnique> mShadowMapEffect;
-        std::unique_ptr<Camera> mGameCamera;
 
-        ShadowMapFBO mShadowMapFBO;
-        SpotLight mSpotLight;
+        std::unique_ptr<Mesh> mTankMesh;
+        std::unique_ptr<Skybox> mSkybox;
 };
 
 int main(int argc, char **argv) {
     GLUTBackend::init(argc, argv);
 
-    if (!GLUTBackend::createWindow(WINDOW_WIDTH, WINDOW_HEIGHT, true, "Tutorial 24"))
+    if (!GLUTBackend::createWindow(WINDOW_WIDTH, WINDOW_HEIGHT, false, "Tutorial 24"))
         return 1;
 
     auto app = std::make_shared<Main>();

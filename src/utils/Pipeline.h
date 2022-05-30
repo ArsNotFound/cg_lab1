@@ -5,6 +5,14 @@
 
 #include <glm/glm.hpp>
 
+struct PersProjInfo {
+        float FOV;     // Поле зрения (в градусах)
+        float width;   // Ширина экрана
+        float height;  // Высота экрана
+        float zNear;   // Ближайшая глубина зрения
+        float zFar;    // Дальнейшая глубина зрения
+};
+
 // Пайплайн для преобразований
 class Pipeline {
     public:
@@ -30,6 +38,8 @@ class Pipeline {
             mWorldPos[2] = z;
         }
 
+        void setWorldPos(const glm::vec3 &vec) { mWorldPos = vec; }
+
         // Функция задания вращения
         void setRotation(float rotateX, float rotateY, float rotateZ) {
             mRotation[0] = rotateX;
@@ -46,6 +56,8 @@ class Pipeline {
             mPersProj.zNear = zNear;
             mPersProj.zFar = zFar;
         }
+
+        void setPerspectiveProj(PersProjInfo p) { mPersProj = p; }
 
         void setCamera(
             const glm::vec3 &pos, const glm::vec3 &target, const glm::vec3 &up
@@ -64,13 +76,7 @@ class Pipeline {
         glm::vec3 mWorldPos;  // Позиция
         glm::vec3 mRotation;  // Вращение
 
-        struct {
-                float FOV;     // Поле зрения (в градусах)
-                float width;   // Ширина экрана
-                float height;  // Высота экрана
-                float zNear;   // Ближайшая глубина зрения
-                float zFar;    // Дальнейшая глубина зрения
-        } mPersProj;
+        PersProjInfo mPersProj;
 
         struct {
                 glm::vec3 pos;     // Позиция камеры

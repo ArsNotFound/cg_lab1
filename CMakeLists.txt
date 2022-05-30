@@ -7,17 +7,12 @@ set(GCC_COVERAGE_COMPILE_FLAGS "-Wall")
 
 find_package(glm REQUIRED)
 find_package(SailC++ REQUIRED)
-find_package(ImageMagick)
-find_package(ImageMagick COMPONENTS Magick++)
 find_package(Boost)
 find_package(assimp)
 
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 
 add_executable(cg_lab1 ${SOURCES})
-
-add_definitions( -DMAGICKCORE_QUANTUM_DEPTH=16 )
-add_definitions( -DMAGICKCORE_HDRI_ENABLE=0 )
 
 target_link_libraries(
         cg_lab1
