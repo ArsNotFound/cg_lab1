@@ -52,8 +52,8 @@ class Main : public ICallbacks {
 
             mLightingEffect->enable();
             mLightingEffect->setDirectionalLight(mDirLight);
-            mLightingEffect->setColorTextureUnit(0);
-            mLightingEffect->setNormalMapTextureUnit(2);
+            mLightingEffect->setColorTextureUnit(COLOR_TEXTURE_UNIT_INDEX);
+            mLightingEffect->setNormalMapTextureUnit(NORMAL_TEXTURE_UNIT_INDEX);
 
             mGround = std::make_unique<Mesh>();
             if (!mGround->loadMesh("./content/quad.obj")) {
@@ -91,7 +91,7 @@ class Main : public ICallbacks {
 
             Pipeline p;
             p.setScale(20.0f, 20.0f, 20.0f);
-            p.setRotation(90.0f, 0.0f, 0.0f);
+            p.setRotation(00.0f, -90.0f, 0.0f);
             p.setWorldPos(0.0f, 0.0f, 0.0f);
             p.setCamera(
                 mGameCamera->getPos(), mGameCamera->getTarget(), mGameCamera->getUp()

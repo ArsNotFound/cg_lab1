@@ -49,7 +49,7 @@ void BillboardList::createPositionBuffer() {
     glGenVertexArrays(1, &mVA);
     glGenBuffers(1, &mVB);
 
-    glBindVertexArray(mVB);
+    glBindVertexArray(mVA);
     glBindBuffer(GL_ARRAY_BUFFER, mVB);
 
     glBufferDataVector(GL_ARRAY_BUFFER, positions, GL_STATIC_DRAW);
