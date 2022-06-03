@@ -16,7 +16,7 @@
         GLenum error = glGetError();                                  \
                                                                       \
         if (error != GL_NO_ERROR) {                                   \
-            boost::format es("OpenGL error is %1%:%2%:%3$#x (%4%)");    \
+            boost::format es("OpenGL error is %1%:%2%:%3$#x (%4%)");  \
             es % __FILE__ % __LINE__ % error % gluErrorString(error); \
             std::cerr << es << std::endl;                             \
             exit(0);                                                  \

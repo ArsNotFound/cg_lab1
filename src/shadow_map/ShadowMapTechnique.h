@@ -3,7 +3,7 @@
 
 #include <glm/glm.hpp>
 
-#include "Technique.h"
+#include "../technique/Technique.h"
 
 class ShadowMapTechnique : public Technique {
     public:

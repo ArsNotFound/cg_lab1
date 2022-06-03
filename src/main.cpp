@@ -9,9 +9,9 @@
 #include "glut_backend/GLUTBackend.h"
 #include "glut_backend/ICallbacks.h"
 #include "glut_backend/common.h"
+#include "light/LightingTechnique.h"
 #include "mesh/Mesh.h"
 #include "skybox/Skybox.h"
-#include "technique/LightingTechnique.h"
 #include "utils/Pipeline.h"
 
 #define WINDOW_WIDTH 1280
@@ -100,7 +100,7 @@ class Main : public ICallbacks {
 
             mLightingEffect->setWVP(p.getWVPTransformation());
             mLightingEffect->setWorldMatrix(p.getWorldTransformation());
-//            mGround->render();
+            //            mGround->render();
 
             mBillboardList.render(p.getWVPTransformation(), mGameCamera->getPos());
 

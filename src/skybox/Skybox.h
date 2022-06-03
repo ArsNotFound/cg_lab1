@@ -6,9 +6,9 @@
 
 #include "../camera/Camera.h"
 #include "../mesh/Mesh.h"
-#include "../technique/SkyboxTechnique.h"
-#include "../texture/CubemapTexture.h"
 #include "../utils/Pipeline.h"
+#include "CubemapTexture.h"
+#include "SkyboxTechnique.h"
 
 class Skybox {
     public:

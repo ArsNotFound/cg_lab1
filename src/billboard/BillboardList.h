@@ -3,13 +3,13 @@
 
 #include <GL/glew.h>
 
-#include <string>
 #include <memory>
+#include <string>
 
 #include <glm/glm.hpp>
 
-#include "../technique/BillboardTechnique.h"
 #include "../texture/Texture.h"
+#include "BillboardTechnique.h"
 
 class BillboardList {
     public:

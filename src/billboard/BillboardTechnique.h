@@ -5,7 +5,7 @@
 
 #include <glm/glm.hpp>
 
-#include "Technique.h"
+#include "../technique/Technique.h"
 class BillboardTechnique : public Technique {
     public:
         BillboardTechnique(
