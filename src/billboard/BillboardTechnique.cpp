@@ -29,10 +29,12 @@ bool BillboardTechnique::init() {
     mVPLocation = getUniformLocation("gVP");
     mCameraPosLocation = getUniformLocation("gCameraPos");
     mColorMapLocation = getUniformLocation("gColorMap");
+    mBillboardSizeLocation = getUniformLocation("gBillboardSize");
 
     if (mVPLocation == INVALID_UNIFORM_LOCATION ||
         mCameraPosLocation == INVALID_UNIFORM_LOCATION ||
-        mColorMapLocation == INVALID_UNIFORM_LOCATION)
+        mColorMapLocation == INVALID_UNIFORM_LOCATION ||
+        mBillboardSizeLocation == INVALID_UNIFORM_LOCATION)
         return false;
 
     return GLCheckError();
@@ -48,4 +50,8 @@ void BillboardTechnique::setCameraPosition(const glm::vec3& pos) const {
 
 void BillboardTechnique::setColorTextureUnit(int textureUnit) const {
     glUniform1i(mColorMapLocation, textureUnit);
+}
+
+void BillboardTechnique::setBillboardSize(float billboardSize) const {
+    glUniform1f(mBillboardSizeLocation, billboardSize);
 }

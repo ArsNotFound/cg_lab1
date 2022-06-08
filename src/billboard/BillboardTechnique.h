@@ -22,6 +22,8 @@ class BillboardTechnique : public Technique {
 
         void setColorTextureUnit(int textureUnit) const;
 
+        void setBillboardSize(float billboardSize) const;
+
     private:
         std::string mVertexShaderFilename;
         std::string mGeometryShaderFilename;
@@ -30,6 +32,7 @@ class BillboardTechnique : public Technique {
         GLint mVPLocation;
         GLint mCameraPosLocation;
         GLint mColorMapLocation;
+        GLint mBillboardSizeLocation;
 };
 
 #endif  // CG_LAB1_BILLBOARDTECHNIQUE_H

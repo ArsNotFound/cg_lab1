@@ -206,5 +206,7 @@ void Mesh::render() {
         glDrawElements(
             GL_TRIANGLES, static_cast<GLsizei>(entry.numIndices), GL_UNSIGNED_INT, nullptr
         );
+
+        glBindVertexArray(0);
     }
 }

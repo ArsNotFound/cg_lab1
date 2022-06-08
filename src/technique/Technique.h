@@ -16,14 +16,14 @@ class Technique {
         void enable() const;
 
     protected:
+        GLuint mShaderProg;
+
         bool addShader(GLenum shaderType, const std::string &shaderText);
         bool addShaderFromFile(GLenum shaderType, const std::string &filepath);
         bool finalize();
         GLint getUniformLocation(const std::string &uniformName) const;
 
     private:
-        GLuint mShaderProg;
-
         typedef std::list<GLuint> shaderObjList;
         shaderObjList mShaderObjList;
 };

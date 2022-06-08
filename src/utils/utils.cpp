@@ -22,3 +22,8 @@ std::string readFile(const std::string &filePath) {
     fileStream.close();
     return content;
 }
+
+float randomFloat() {
+    auto max = static_cast<float>(RAND_MAX);
+    return (static_cast<float>(random()) / max);
+}

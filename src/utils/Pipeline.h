@@ -71,6 +71,8 @@ class Pipeline {
 
         const glm::mat4 &getWVPTransformation();
 
+        const glm::mat4 &getVPTransformation();
+
     private:
         glm::vec3 mScale;     // Масштаб
         glm::vec3 mWorldPos;  // Позиция
@@ -85,6 +87,7 @@ class Pipeline {
         } mCamera;
 
         glm::mat4 mWVPTransformation;
+        glm::mat4 mVPTransformation;
         glm::mat4 mWorldTransformation;
 };
 

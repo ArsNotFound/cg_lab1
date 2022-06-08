@@ -4,6 +4,8 @@
 
 #include <memory>
 
+#include <sys/time.h>
+
 #include "billboard/BillboardList.h"
 #include "camera/Camera.h"
 #include "glut_backend/GLUTBackend.h"
@@ -11,11 +13,19 @@
 #include "glut_backend/common.h"
 #include "light/LightingTechnique.h"
 #include "mesh/Mesh.h"
-#include "skybox/Skybox.h"
+#include "particle_system/ParticleSystem.h"
 #include "utils/Pipeline.h"
 
-#define WINDOW_WIDTH 1280
-#define WINDOW_HEIGHT 720
+#define WINDOW_WIDTH 1920
+#define WINDOW_HEIGHT 1080
+
+long long getCurrentTimeMillis() {
+    timeval t{};
+    gettimeofday(&t, nullptr);
+
+    long long ret = t.tv_sec * 1000 + t.tv_usec / 1000;
+    return ret;
+}
 
 class Main : public ICallbacks {
     public:
@@ -30,37 +40,34 @@ class Main : public ICallbacks {
             mPersProjInfo.height = WINDOW_HEIGHT;
             mPersProjInfo.zNear = 1.0f;
             mPersProjInfo.zFar = 100.0f;
+
+            mCurrentTimeMillis = getCurrentTimeMillis();
         }
 
         ~Main() override = default;
 
         bool init() {
-            glm::vec3 pos(0.5f, 1.0f, -1.0f);
-            glm::vec3 target(0.0f, -0.5f, 1.0f);
+            glm::vec3 pos(0.0f, 0.4f, -0.5f);
+            glm::vec3 target(0.0f, 0.0f, 1.0f);
             glm::vec3 up(0.0f, 1.0f, 0.0f);
 
             mGameCamera =
                 std::make_shared<Camera>(WINDOW_WIDTH, WINDOW_HEIGHT, pos, target, up);
 
-            mLightingEffect = std::make_unique<LightingTechnique>(
+            mLightingTechnique = std::make_unique<LightingTechnique>(
                 "./shaders/light_vertex.glsl", "./shaders/light_fragment.glsl"
             );
-            if (!mLightingEffect->init()) {
+            if (!mLightingTechnique->init()) {
                 std::cerr << "Error initializing the lighting technique" << std::endl;
                 return false;
             }
-
-            mLightingEffect->enable();
-            mLightingEffect->setDirectionalLight(mDirLight);
-            mLightingEffect->setColorTextureUnit(COLOR_TEXTURE_UNIT_INDEX);
-            mLightingEffect->setNormalMapTextureUnit(NORMAL_TEXTURE_UNIT_INDEX);
+            mLightingTechnique->enable();
+            mLightingTechnique->setDirectionalLight(mDirLight);
+            mLightingTechnique->setColorTextureUnit(COLOR_TEXTURE_UNIT_INDEX);
+            mLightingTechnique->setNormalMapTextureUnit(NORMAL_TEXTURE_UNIT_INDEX);
 
             mGround = std::make_unique<Mesh>();
             if (!mGround->loadMesh("./content/quad.obj")) {
-                return false;
-            }
-
-            if (!mBillboardList.init("./content/monster_hellknight.png")) {
                 return false;
             }
 
@@ -76,33 +83,40 @@ class Main : public ICallbacks {
                 return false;
             }
 
-            return true;
+            return mParticleSystem.init(glm::vec3(0.0f, 0.0f, 1.0f));
         }
 
         void renderSceneCB() override {
+            long long timeNowMillis = getCurrentTimeMillis();
+            assert(timeNowMillis >= mCurrentTimeMillis);
+            auto deltaTimeMillis =
+                static_cast<int>(timeNowMillis - mCurrentTimeMillis);
             mGameCamera->onRender();
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            mLightingEffect->enable();
+            mLightingTechnique->enable();
 
             mTexture->bind(COLOR_TEXTURE_UNIT);
             mNormalMap->bind(NORMAL_TEXTURE_UNIT);
 
             Pipeline p;
             p.setScale(20.0f, 20.0f, 20.0f);
-            p.setRotation(00.0f, -90.0f, 0.0f);
+            p.setRotation(90.0f, 0.0f, 0.0f);
             p.setWorldPos(0.0f, 0.0f, 0.0f);
             p.setCamera(
                 mGameCamera->getPos(), mGameCamera->getTarget(), mGameCamera->getUp()
             );
             p.setPerspectiveProj(mPersProjInfo);
 
-            mLightingEffect->setWVP(p.getWVPTransformation());
-            mLightingEffect->setWorldMatrix(p.getWorldTransformation());
-            //            mGround->render();
+            mLightingTechnique->setWVP(p.getWVPTransformation());
+            mLightingTechnique->setWorldMatrix(p.getWorldTransformation());
 
-            mBillboardList.render(p.getWVPTransformation(), mGameCamera->getPos());
+            mGround->render();
+
+            mParticleSystem.render(
+                deltaTimeMillis, p.getVPTransformation(), mGameCamera->getPos()
+            );
 
             glutSwapBuffers();
         }
@@ -126,22 +140,26 @@ class Main : public ICallbacks {
         void passiveMouseCB(int x, int y) override { mGameCamera->onMouse(x, y); }
 
     private:
-        PersProjInfo mPersProjInfo;
-        DirectionLight mDirLight;
-        std::shared_ptr<Camera> mGameCamera;
-        std::unique_ptr<LightingTechnique> mLightingEffect;
+        long long mCurrentTimeMillis;
 
-        BillboardList mBillboardList;
+        std::unique_ptr<LightingTechnique> mLightingTechnique;
+        std::shared_ptr<Camera> mGameCamera;
+
+        DirectionLight mDirLight;
 
         std::unique_ptr<Mesh> mGround;
         std::unique_ptr<Texture> mTexture;
         std::unique_ptr<Texture> mNormalMap;
+
+        PersProjInfo mPersProjInfo{};
+
+        ParticleSystem mParticleSystem;
 };
 
 int main(int argc, char **argv) {
     GLUTBackend::init(argc, argv);
 
-    if (!GLUTBackend::createWindow(WINDOW_WIDTH, WINDOW_HEIGHT, false, "Tutorial 26"))
+    if (!GLUTBackend::createWindow(WINDOW_WIDTH, WINDOW_HEIGHT, true, "Tutorial 26"))
         return 1;
 
     auto app = std::make_shared<Main>();

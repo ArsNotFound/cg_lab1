@@ -32,4 +32,6 @@ inline void glBufferDataVector(GLenum target, const std::vector<T> &v, GLenum us
     glBufferData(target, v.size() * sizeof(T), &v.front(), usage);
 }
 
+float randomFloat();
+
 #endif  // CG_LAB1_UTILS_H
